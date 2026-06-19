@@ -1,0 +1,6 @@
+# Never commit secrets or local files
+.env
+.env.*
+node_modules/
+.netlify/
+.DS_Store
