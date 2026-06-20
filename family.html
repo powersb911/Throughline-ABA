@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Throughline — Family Engagement Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+body {
+  --paper: #f1efe8;
+  --paper-2: #f8f6f0;
+  --ink: #221b21;
+  --ink-soft: #524a51;
+  --ink-faint: #8a8188;
+  --line: #ddd6d3;
+  --plum: #6d4660;
+  --plum-deep: #523349;
+  --plum-tint: #efe5ec;
+  --gold: #a87f3d;
+  --gold-soft: #f2ead9;
+  --clay: #b0573c;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, #f5efef 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #f0ecef 0%, transparent 55%),
+    var(--paper);
+  color: var(--ink);
+  font-family: 'Public Sans', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tl-root { padding: 40px 28px 56px; }
+.tl-wrap { max-width: 1180px; margin: 0 auto; }
+
+/* Header */
+.tl-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; margin-bottom: 34px;
+}
+.tl-brand { display: flex; align-items: center; gap: 16px; }
+.tl-mark {
+  width: 46px; height: 46px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--plum); color: var(--paper-2);
+  font-family: 'Newsreader', serif; font-size: 26px; font-weight: 500;
+  border-radius: 13px; box-shadow: 0 6px 18px rgba(109,70,96,0.28);
+}
+.tl-header h1 {
+  font-family: 'Newsreader', serif; font-weight: 500;
+  font-size: 30px; letter-spacing: -0.01em; margin: 0; line-height: 1;
+}
+.tl-mode-pill {
+  display: inline-block; margin-top: 5px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--plum-deep);
+  background: var(--plum-tint); border: 1px solid #e0cdda;
+  padding: 2px 9px; border-radius: 999px;
+}
+.tl-privacy {
+  display: flex; align-items: center; gap: 7px;
+  color: var(--plum-deep); background: var(--plum-tint);
+  padding: 8px 14px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600;
+  border: 1px solid #e0cdda;
+}
+.tl-privacy svg { width: 15px; height: 15px; }
+
+/* Panel */
+.tl-panel {
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 20px; padding: 28px 28px 24px;
+  box-shadow: 28px 28px 60px rgba(34,27,33,0.06);
+}
+.tl-panel h2 {
+  font-family: 'Newsreader', serif; font-weight: 500; font-size: 23px;
+  margin: 0 0 6px; letter-spacing: -0.01em;
+}
+.tl-panel-desc { margin: 0 0 18px; color: var(--ink-soft); max-width: 66ch; font-size: 14.5px; }
+
+/* Caregiver selector */
+.tl-care {
+  margin-bottom: 22px; padding-bottom: 22px;
+  border-bottom: 1px dashed var(--line);
+}
+.tl-care-label {
+  font-size: 13px; font-weight: 700; color: var(--ink-soft);
+  letter-spacing: 0.02em; margin: 0 0 4px;
+}
+.tl-care-hint { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 12px; }
+.tl-care-rows { display: flex; flex-direction: column; gap: 10px; }
+.tl-care-row { display: flex; align-items: center; gap: 10px; }
+.tl-care-role {
+  font-size: 11px; font-weight: 700; color: var(--plum-deep);
+  background: var(--plum-tint); border: 1px solid #e0cdda;
+  border-radius: 7px; padding: 4px 9px; min-width: 64px; text-align: center;
+  letter-spacing: 0.03em; text-transform: uppercase; flex-shrink: 0;
+}
+.tl-select-shell { position: relative; flex: 1; max-width: 280px; }
+.tl-select-shell svg {
+  position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--ink-faint); pointer-events: none;
+}
+select {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 11px;
+  padding: 11px 38px 11px 14px; font-family: 'Public Sans', sans-serif;
+  font-size: 14.5px; font-weight: 500; cursor: pointer;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+select:focus {
+  outline: none; border-color: var(--plum);
+  box-shadow: 0 0 0 4px rgba(109,70,96,0.10);
+}
+.btn-remove-care {
+  width: 34px; height: 34px; flex-shrink: 0; padding: 0;
+  display: grid; place-items: center; border-radius: 9px;
+  background: transparent; color: var(--ink-faint);
+  border: 1px solid var(--line); transition: all 0.15s;
+}
+.btn-remove-care:hover { color: var(--clay); border-color: #e0c4ba; background: #faf1ed; }
+.btn-remove-care svg { width: 15px; height: 15px; }
+.btn-add-care {
+  margin-top: 12px; padding: 9px 15px; border-radius: 10px;
+  font-size: 13.5px; font-weight: 600;
+  background: var(--gold-soft); color: #7a5a1e;
+  border: 1px solid #e6d7b4; transition: all 0.15s;
+}
+.btn-add-care:hover:not(:disabled) { background: #ece0c4; border-color: #ddc999; }
+.btn-add-care svg { width: 15px; height: 15px; }
+
+/* Textarea */
+.tl-textarea-shell { position: relative; }
+textarea {
+  width: 100%; min-height: 200px; resize: vertical;
+  background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px; font-family: 'Public Sans', sans-serif;
+  font-size: 15.5px; line-height: 1.65;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+textarea:focus {
+  outline: none; border-color: var(--plum);
+  box-shadow: 0 0 0 4px rgba(109,70,96,0.10);
+}
+textarea::placeholder { color: #aaa29f; }
+
+.tl-listening {
+  position: absolute; bottom: 14px; right: 16px;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--clay); font-weight: 600;
+  pointer-events: none;
+}
+.tl-pulse {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--clay); animation: tl-pulse 1.1s infinite;
+}
+@keyframes tl-pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* Actions */
+.tl-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-top: 18px; flex-wrap: wrap;
+}
+.tl-actions-left { display: flex; align-items: center; gap: 10px; }
+
+button {
+  cursor: pointer; font-family: 'Public Sans', sans-serif;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.btn-mic {
+  padding: 11px 16px; border-radius: 11px; font-size: 14px; font-weight: 600;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); transition: all 0.16s;
+}
+.btn-mic:hover:not(:disabled) { border-color: var(--ink-faint); color: var(--ink); }
+.btn-mic.on { background: var(--clay); color: #fff; border-color: var(--clay); box-shadow: 0 4px 14px rgba(176,87,60,0.3); }
+.btn-mic svg { width: 16px; height: 16px; }
+
+.btn-clear {
+  padding: 11px 16px; border-radius: 11px; font-size: 14px; font-weight: 600;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); transition: all 0.16s;
+}
+.btn-clear:hover { border-color: var(--ink-faint); color: var(--ink); }
+.btn-clear svg { width: 15px; height: 15px; }
+
+.btn-generate {
+  padding: 13px 24px; border-radius: 12px; font-size: 15px; font-weight: 600;
+  background: var(--plum); color: var(--paper-2); border: none;
+  box-shadow: 0 6px 18px rgba(109,70,96,0.26);
+  transition: transform 0.14s, box-shadow 0.16s, background 0.16s;
+}
+.btn-generate:hover:not(:disabled) {
+  background: var(--plum-deep); transform: translateY(-1px);
+  box-shadow: 0 9px 24px rgba(109,70,96,0.32);
+}
+.btn-generate svg { width: 16px; height: 16px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; display: inline-block; }
+
+/* Error */
+.tl-error {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 16px; padding: 12px 14px; border-radius: 11px;
+  background: #faece7; color: #8c3a22; font-size: 13.5px; font-weight: 500;
+  border: 1px solid #eccfc4;
+}
+.tl-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Output grid */
+.tl-output {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 18px; margin-top: 22px;
+}
+@media (max-width: 880px) { .tl-output { grid-template-columns: 1fr; } }
+
+.tl-col {
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 18px; padding: 22px 22px 24px;
+  box-shadow: 28px 28px 60px rgba(34,27,33,0.06);
+  border-top: 3px solid var(--plum);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.tl-col.visible { opacity: 1; transform: translateY(0); }
+
+.tl-col-head {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 10px; margin-bottom: 4px;
+}
+.tl-col-head-left { display: flex; align-items: center; gap: 10px; }
+.tl-col-num {
+  width: 24px; height: 24px; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--plum-tint); color: var(--plum-deep);
+  border-radius: 7px; font-size: 13px; font-weight: 700;
+  font-family: 'Newsreader', serif;
+}
+.tl-col-head h3 {
+  font-family: 'Newsreader', serif; font-weight: 500; font-size: 17.5px;
+  margin: 0; line-height: 1.25;
+}
+.btn-copy {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  padding: 8px 13px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
+  background: var(--plum); color: var(--paper-2);
+  border: 1px solid var(--plum); transition: all 0.15s; white-space: nowrap;
+}
+.btn-copy:hover { background: var(--plum-deep); border-color: var(--plum-deep); }
+.btn-copy.copied { background: var(--plum-tint); color: var(--plum-deep); border-color: #e0cdda; }
+.btn-copy svg { width: 14px; height: 14px; }
+
+.tl-col-sub {
+  font-size: 12px; color: var(--ink-faint); line-height: 1.45;
+  margin: 0 0 14px; padding-bottom: 13px;
+  border-bottom: 1px dashed var(--line); font-style: italic;
+}
+.tl-col-body { font-size: 14.5px; line-height: 1.68; color: #2e272d; white-space: pre-wrap; }
+
+.tl-foot { margin-top: 26px; text-align: center; font-size: 12.5px; color: var(--ink-faint); }
+
+#clear-btn { display: none; }
+
+@media (max-width: 560px) {
+  .tl-root { padding: 26px 16px 40px; }
+  .tl-actions { flex-direction: column-reverse; align-items: stretch; }
+  .btn-generate { justify-content: center; }
+  .tl-actions-left { justify-content: space-between; }
+  .tl-select-shell { max-width: none; }
+}
+</style>
+</head>
+<body>
+<div class="tl-root">
+  <div class="tl-wrap">
+
+    <!-- Header -->
+    <header class="tl-header">
+      <div class="tl-brand">
+        <span class="tl-mark">T</span>
+        <div>
+          <h1>Throughline</h1>
+          <span class="tl-mode-pill">Family Engagement</span>
+        </div>
+      </div>
+      <div class="tl-privacy">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        In-session only &middot; nothing stored
+      </div>
+    </header>
+
+    <!-- Input panel -->
+    <section class="tl-panel">
+      <h2>Family engagement scratchpad</h2>
+      <p class="tl-panel-desc">
+        Pick who you met with, then jot what was discussed — any order, shorthand is fine.
+        Hit Generate and it sorts everything into the three HiRasmus fields. It won't invent
+        details you didn't give it.
+      </p>
+
+      <!-- Caregiver selector -->
+      <div class="tl-care">
+        <p class="tl-care-label">Who was in the meeting?</p>
+        <p class="tl-care-hint">The note will refer to them this way. The first one listed is treated as the primary caregiver.</p>
+        <div class="tl-care-rows" id="care-rows"><!-- rows injected by JS --></div>
+        <button class="btn-add-care" id="add-care-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add another caregiver
+        </button>
+      </div>
+
+      <div class="tl-textarea-shell">
+        <textarea
+          id="session-input"
+          placeholder="e.g. biweekly meeting. mom concerned about ear pulling, maybe another ear infection. otherwise proud of progress. talked about learner getting more into AAC device, favoriting pages + seeking tech support to find them. brushing teeth more without target behaviors. recommended pairing mom w device at home since learner throws it. meet in 2 weeks…"
+          spellcheck="true"
+        ></textarea>
+        <div class="tl-listening" id="listening-indicator" style="display:none;">
+          <span class="tl-pulse"></span> listening…
+        </div>
+      </div>
+
+      <div class="tl-actions">
+        <div class="tl-actions-left">
+          <div>
+            <button class="btn-mic" id="mic-btn" title="Dictate instead of typing">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+              Dictate
+            </button>
+            <p style="margin:4px 0 0; font-size:11.5px; color:var(--ink-faint);">Voice uses your browser's built-in speech recognition. Do not speak real client names.</p>
+          </div>
+          <button class="btn-clear" id="clear-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Clear
+          </button>
+        </div>
+        <button class="btn-generate" id="generate-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
+          Generate note
+        </button>
+      </div>
+
+      <div class="tl-error" id="error-box" style="display:none;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="error-msg"></span>
+      </div>
+    </section>
+
+    <!-- Output columns -->
+    <section class="tl-output" id="output-section" style="display:none;">
+      <article class="tl-col" id="col-0">
+        <div class="tl-col-head">
+          <div class="tl-col-head-left">
+            <span class="tl-col-num">1</span>
+            <h3>Purpose of Meeting</h3>
+          </div>
+          <button class="btn-copy" data-col="0" title="Copy this column">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <p class="tl-col-sub">Why did you meet, and what were the caregiver's concerns coming in?</p>
+        <div class="tl-col-body" id="col-body-0"></div>
+      </article>
+
+      <article class="tl-col" id="col-1">
+        <div class="tl-col-head">
+          <div class="tl-col-head-left">
+            <span class="tl-col-num">2</span>
+            <h3>Meeting Summary</h3>
+          </div>
+          <button class="btn-copy" data-col="1" title="Copy this column">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <p class="tl-col-sub">What was discussed during the meeting, and what were the outcomes?</p>
+        <div class="tl-col-body" id="col-body-1"></div>
+      </article>
+
+      <article class="tl-col" id="col-2">
+        <div class="tl-col-head">
+          <div class="tl-col-head-left">
+            <span class="tl-col-num">3</span>
+            <h3>BCBA Follow-Up</h3>
+          </div>
+          <button class="btn-copy" data-col="2" title="Copy this column">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <p class="tl-col-sub">What are the next steps, and when is the next meeting?</p>
+        <div class="tl-col-body" id="col-body-2"></div>
+      </article>
+    </section>
+
+    <footer class="tl-foot">
+      Draft output — the supervising BCBA reviews and approves every note before it is submitted.
+    </footer>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const ROLES = ['Mom','Dad','Grandmother','Grandfather','Brother','Sister','Cousin','Caregiver','Other (specify in note)'];
+  const MAX_CARE = 4;
+
+  const input       = document.getElementById('session-input');
+  const generateBtn = document.getElementById('generate-btn');
+  const clearBtn    = document.getElementById('clear-btn');
+  const micBtn      = document.getElementById('mic-btn');
+  const errorBox    = document.getElementById('error-box');
+  const errorMsg    = document.getElementById('error-msg');
+  const outputSec   = document.getElementById('output-section');
+  const listeningEl = document.getElementById('listening-indicator');
+  const careRows    = document.getElementById('care-rows');
+  const addCareBtn  = document.getElementById('add-care-btn');
+
+  const LOADING_LINES = [
+    'Reading the conversation…',
+    'Sorting purpose, summary, follow-up…',
+    'Writing in clinical voice…',
+    'Polishing the language…',
+  ];
+
+  let listening = false;
+  let recognition = null;
+  let loadingTimer = null;
+  let loadingIdx = 0;
+
+  /* ---------- Caregiver selector ---------- */
+  function buildRow(isPrimary) {
+    const row = document.createElement('div');
+    row.className = 'tl-care-row';
+
+    const role = document.createElement('span');
+    role.className = 'tl-care-role';
+    role.textContent = isPrimary ? 'Primary' : 'Also';
+    row.appendChild(role);
+
+    const shell = document.createElement('div');
+    shell.className = 'tl-select-shell';
+    const sel = document.createElement('select');
+    ROLES.forEach(function (r) {
+      const opt = document.createElement('option');
+      opt.value = r; opt.textContent = r;
+      sel.appendChild(opt);
+    });
+    shell.appendChild(sel);
+    const chev = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chev.setAttribute('fill', 'none'); chev.setAttribute('viewBox', '0 0 24 24');
+    chev.setAttribute('stroke', 'currentColor'); chev.setAttribute('stroke-width', '2');
+    chev.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+    shell.appendChild(chev);
+    row.appendChild(shell);
+
+    if (!isPrimary) {
+      const rm = document.createElement('button');
+      rm.className = 'btn-remove-care';
+      rm.title = 'Remove this caregiver';
+      rm.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      rm.addEventListener('click', function () {
+        row.remove();
+        refreshCareState();
+      });
+      row.appendChild(rm);
+    }
+    return row;
+  }
+
+  function refreshCareState() {
+    const rows = careRows.querySelectorAll('.tl-care-row');
+    rows.forEach(function (r, i) {
+      r.querySelector('.tl-care-role').textContent = i === 0 ? 'Primary' : 'Also';
+    });
+    addCareBtn.disabled = rows.length >= MAX_CARE;
+  }
+
+  careRows.appendChild(buildRow(true));
+  refreshCareState();
+
+  addCareBtn.addEventListener('click', function () {
+    if (careRows.querySelectorAll('.tl-care-row').length >= MAX_CARE) return;
+    careRows.appendChild(buildRow(false));
+    refreshCareState();
+  });
+
+  function getCaregivers() {
+    return Array.from(careRows.querySelectorAll('select')).map(function (s) { return s.value; });
+  }
+
+  /* ---------- Input housekeeping ---------- */
+  input.addEventListener('input', function () {
+    clearBtn.style.display = input.value.trim() ? 'inline-flex' : 'none';
+  });
+
+  clearBtn.addEventListener('click', function () {
+    input.value = '';
+    clearBtn.style.display = 'none';
+    outputSec.style.display = 'none';
+    hideError();
+  });
+
+  /* ---------- Voice / dictation ---------- */
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    micBtn.disabled = true;
+    micBtn.title = "Voice input isn't supported in this browser — use Chrome";
+  }
+
+  micBtn.addEventListener('click', function () {
+    if (!SpeechRecognition) return;
+    if (listening) {
+      recognition && recognition.stop();
+      setListening(false);
+      return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.onresult = function (e) {
+      var final = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      }
+      if (final) {
+        input.value = (input.value ? input.value + ' ' : '') + final.trim();
+        clearBtn.style.display = 'inline-flex';
+      }
+    };
+    recognition.onerror = function () { setListening(false); };
+    recognition.onend   = function () { setListening(false); };
+    recognition.start();
+    setListening(true);
+  });
+
+  function setListening(on) {
+    listening = on;
+    listeningEl.style.display = on ? 'flex' : 'none';
+    if (on) {
+      micBtn.classList.add('on');
+      micBtn.innerHTML = '<svg fill="currentColor" viewBox="0 0 24 24" width="16" height="16"><rect x="5" y="5" width="14" height="14" rx="2"/></svg> Stop';
+    } else {
+      micBtn.classList.remove('on');
+      micBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg> Dictate';
+    }
+  }
+
+  /* ---------- Generate ---------- */
+  generateBtn.addEventListener('click', generate);
+
+  async function generate() {
+    var text = input.value.trim();
+    if (!text) return;
+
+    if (listening) { recognition && recognition.stop(); setListening(false); }
+
+    setLoading(true);
+    hideError();
+    outputSec.style.display = 'none';
+
+    try {
+      var res = await fetch('/.netlify/functions/generate-family', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: text, caregivers: getCaregivers() }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+
+      document.getElementById('col-body-0').textContent = data.column1 || '';
+      document.getElementById('col-body-1').textContent = data.column2 || '';
+      document.getElementById('col-body-2').textContent = data.column3 || '';
+
+      outputSec.style.display = 'grid';
+      [0, 1, 2].forEach(function (i) {
+        var col = document.getElementById('col-' + i);
+        col.classList.remove('visible');
+        setTimeout(function () { col.classList.add('visible'); }, i * 90);
+      });
+    } catch (err) {
+      showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setLoading(on) {
+    if (on) {
+      loadingIdx = 0;
+      generateBtn.disabled = true;
+      var icon = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ';
+      generateBtn.innerHTML = icon + LOADING_LINES[0];
+      loadingTimer = setInterval(function () {
+        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
+        generateBtn.innerHTML = icon + LOADING_LINES[loadingIdx];
+      }, 1400);
+    } else {
+      clearInterval(loadingTimer);
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg> Generate note';
+    }
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorBox.style.display = 'flex';
+  }
+  function hideError() {
+    errorBox.style.display = 'none';
+    errorMsg.textContent = '';
+  }
+
+  /* ---------- Copy buttons ---------- */
+  document.querySelectorAll('.btn-copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var colIdx = btn.getAttribute('data-col');
+      var text = document.getElementById('col-body-' + colIdx).textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = 'Select text manually to copy';
+        setTimeout(function () {
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+        }, 2400);
+      });
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
