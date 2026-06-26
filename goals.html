@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Throughline — Goal Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+body {
+  --paper: #f1efe8;
+  --paper-2: #f8f6f0;
+  --ink: #1b2124;
+  --ink-soft: #4a5054;
+  --ink-faint: #82888b;
+  --line: #ccd4dd;
+  --navy: #2d4660;
+  --navy-deep: #203347;
+  --navy-tint: #e6ecf2;
+  --clay: #b0573c;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, #eaf0f6 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #edf0ee 0%, transparent 55%),
+    var(--paper);
+  color: var(--ink);
+  font-family: 'Public Sans', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tl-root { padding: 40px 28px 56px; }
+.tl-wrap { max-width: 1180px; margin: 0 auto; }
+
+/* Header */
+.tl-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 34px; }
+.tl-brand { display: flex; align-items: center; gap: 16px; }
+.tl-mark {
+  width: 46px; height: 46px; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--navy); color: var(--paper-2);
+  font-family: 'Newsreader', serif; font-size: 26px; font-weight: 500;
+  border-radius: 13px; box-shadow: 0 6px 18px rgba(45,70,96,0.28);
+}
+.tl-header h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 30px; letter-spacing: -0.01em; margin: 0; line-height: 1; }
+.tl-privacy {
+  display: flex; align-items: center; gap: 7px; color: var(--navy-deep); background: var(--navy-tint);
+  padding: 8px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid #cbd7e3;
+}
+.tl-privacy svg { width: 15px; height: 15px; }
+
+/* Panel */
+.tl-panel {
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 20px; padding: 28px 28px 24px;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06);
+}
+.tl-panel h2 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 23px; margin: 0 0 6px; letter-spacing: -0.01em; }
+.tl-panel-desc { margin: 0 0 24px; color: var(--ink-soft); max-width: 66ch; font-size: 14.5px; }
+
+/* Minimal Grid */
+.tl-grid-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 18px; }
+@media (max-width: 768px) { .tl-grid-inputs { grid-template-columns: 1fr; } }
+
+.tl-field-block { display: flex; flex-direction: column; gap: 6px; }
+.tl-field-block.full-width { grid-column: 1 / -1; }
+.tl-field-label { font-size: 13px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.02em; text-transform: uppercase; }
+
+input[type="text"], select, textarea {
+  width: 100%; background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 11px;
+  padding: 11px 14px; font-family: 'Public Sans', sans-serif;
+  font-size: 14.5px; font-weight: 500;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+input[type="text"]:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px rgba(45,70,96,0.10);
+}
+select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 38px; }
+.tl-select-shell { position: relative; width: 100%; }
+.tl-select-shell svg {
+  position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--ink-faint); pointer-events: none;
+}
+textarea { min-height: 100px; resize: vertical; line-height: 1.65; }
+input::placeholder, textarea::placeholder { color: #a7aea8; font-weight: 400; }
+
+/* Actions */
+.tl-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 18px; }
+button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inline-flex; align-items: center; gap: 8px; }
+.btn-generate {
+  padding: 13px 24px; border-radius: 12px; font-size: 15px; font-weight: 600;
+  background: var(--navy); color: var(--paper-2); border: none;
+  box-shadow: 0 6px 18px rgba(45,70,96,0.26); transition: all 0.15s;
+}
+.btn-generate:hover:not(:disabled) { background: var(--navy-deep); transform: translateY(-1px); box-shadow: 0 9px 24px rgba(45,70,96,0.32); }
+.btn-generate svg { width: 16px; height: 16px; }
+.spin { animation: spin 0.9s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Output */
+.tl-output { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 22px; }
+@media (max-width: 880px) { .tl-output { grid-template-columns: 1fr; } }
+.tl-col {
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 22px;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06); border-top: 3px solid var(--navy);
+  opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.tl-col.visible { opacity: 1; transform: translateY(0); }
+.tl-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.tl-col-head h3 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 18px; margin: 0; line-height: 1.25; }
+.btn-copy {
+  padding: 8px 13px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
+  background: var(--navy); color: var(--paper-2); border: 1px solid var(--navy); transition: all 0.15s;
+}
+.btn-copy:hover { background: var(--navy-deep); border-color: var(--navy-deep); }
+.btn-copy.copied { background: var(--navy-tint); color: var(--navy-deep); border-color: #cbd7e3; }
+.tl-col-body { font-size: 14.5px; line-height: 1.68; color: #272c2e; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="tl-root">
+  <div class="tl-wrap">
+
+    <header class="tl-header">
+      <div class="tl-brand">
+        <span class="tl-mark">T</span>
+        <div>
+          <h1>Throughline</h1>
+          <nav class="tl-nav-tabs" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <a href="index.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
+            <a href="family.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
+            <a href="goals.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--navy-deep); background: var(--navy-tint); border: 1px solid #cbd7e3; padding: 4px 12px; border-radius: 999px;">Goal Builder</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <section class="tl-panel">
+      <h2>Goal Copy-Paste Generator</h2>
+      <p class="tl-panel-desc">Quickly generate compliant goal and objective text to paste directly into HiRasmus.</p>
+
+      <div class="tl-grid-inputs">
+        <!-- Goal Title -->
+        <div class="tl-field-block full-width">
+          <label class="tl-field-label">Target Behavior / Goal Title</label>
+          <input type="text" id="goal-title" placeholder="e.g., Manding for items, Independent Handwashing..." />
+        </div>
+
+        <!-- Location -->
+        <div class="tl-field-block">
+          <label class="tl-field-label">Location</label>
+          <div class="tl-select-shell">
+            <select id="goal-location">
+              <option value="Clinic">Clinic (Default)</option>
+              <option value="Home">Home</option>
+              <option value="Community">Community</option>
+              <option value="School">School</option>
+              <option value="Store">Store</option>
+              <option value="Varying/Multiple">Varying Locations</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <!-- Methodology -->
+        <div class="tl-field-block">
+          <label class="tl-field-label">Methodology</label>
+          <div class="tl-select-shell">
+            <select id="goal-method">
+              <option value="NET">NET (Natural Environment Training)</option>
+              <option value="DTT">DTT (Discrete Trial Training)</option>
+              <option value="Both">Both / Any</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <!-- Assessment -->
+        <div class="tl-field-block">
+          <label class="tl-field-label">Assessment Reference</label>
+          <div class="tl-select-shell">
+            <select id="goal-assessment">
+              <option value="N/A">None / General Clinical Need</option>
+              <option value="VB-MAPP">VB-MAPP</option>
+              <option value="ABLLS-R">ABLLS-R</option>
+              <option value="AFLS">AFLS</option>
+              <option value="PEAK">PEAK</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <!-- Materials -->
+        <div class="tl-field-block">
+          <label class="tl-field-label">Materials Needed?</label>
+          <input type="text" id="goal-materials" placeholder="Leave blank if naturally occurring MOs only..." />
+        </div>
+
+        <!-- Extra Shorthand -->
+        <div class="tl-field-block full-width">
+          <label class="tl-field-label">Shorthand Notes (Optional)</label>
+          <textarea id="goal-notes" placeholder="Any baseline data, specific mastery criteria, or specific prompt hierarchies you want included?"></textarea>
+        </div>
+      </div>
+
+      <div class="tl-actions">
+        <button class="btn-generate" id="generate-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
+          Generate Text
+        </button>
+      </div>
+    </section>
+
+    <!-- Output -->
+    <section class="tl-output" id="output-section" style="display:none;">
+      <article class="tl-col" id="col-0">
+        <div class="tl-col-head">
+          <h3>Target Goal</h3>
+          <button class="btn-copy" data-col="0">Copy</button>
+        </div>
+        <div class="tl-col-body" id="col-body-0"></div>
+      </article>
+
+      <article class="tl-col" id="col-1">
+        <div class="tl-col-head">
+          <h3>Objective(s) & Rationale</h3>
+          <button class="btn-copy" data-col="1">Copy</button>
+        </div>
+        <div class="tl-col-body" id="col-body-1"></div>
+      </article>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const generateBtn = document.getElementById('generate-btn');
+  const outputSec   = document.getElementById('output-section');
+
+  const GOAL_FIELDS = ['goal-title','goal-location','goal-method','goal-assessment','goal-materials','goal-notes'];
+
+  // Restore draft from sessionStorage on load
+  var savedGoals = sessionStorage.getItem('tl-goals-draft');
+  if (savedGoals) {
+    try {
+      var draft = JSON.parse(savedGoals);
+      GOAL_FIELDS.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && draft[id] != null) el.value = draft[id];
+      });
+    } catch (e) {}
+  }
+
+  // Save draft on any input change
+  function saveGoalsDraft() {
+    var draft = {};
+    GOAL_FIELDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) draft[id] = el.value;
+    });
+    sessionStorage.setItem('tl-goals-draft', JSON.stringify(draft));
+  }
+  GOAL_FIELDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveGoalsDraft);
+    if (el && el.tagName === 'SELECT') el.addEventListener('change', saveGoalsDraft);
+  });
+
+  generateBtn.addEventListener('click', async function() {
+    const payload = {
+      title: document.getElementById('goal-title').value,
+      location: document.getElementById('goal-location').value,
+      method: document.getElementById('goal-method').value,
+      assessment: document.getElementById('goal-assessment').value,
+      materials: document.getElementById('goal-materials').value,
+      notes: document.getElementById('goal-notes').value
+    };
+
+    if(!payload.title) {
+      alert("Please enter a Target Behavior / Goal Title.");
+      return;
+    }
+
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> Writing goal...';
+
+    try {
+      const res = await fetch('/.netlify/functions/generate-goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      
+      document.getElementById('col-body-0').textContent = data.goal || '';
+      document.getElementById('col-body-1').textContent = data.objective || '';
+
+      outputSec.style.display = 'grid';
+      [0, 1].forEach(function (i) {
+        const col = document.getElementById('col-' + i);
+        col.classList.remove('visible');
+        setTimeout(function () { col.classList.add('visible'); }, i * 100);
+      });
+    } catch (err) {
+      // Temporary mock output for front-end testing if the backend isn't hooked up yet
+      document.getElementById('col-body-0').textContent = `By [Date], given ${payload.materials ? payload.materials : 'naturally occurring materials'} in the ${payload.location.toLowerCase()}, the learner will demonstrate ${payload.title} during ${payload.method} opportunities...`;
+      document.getElementById('col-body-1').textContent = `Objective 1: The learner will... \n\nRationale: This aligns with ${payload.assessment !== 'N/A' ? payload.assessment : 'clinical necessity'} to increase independence...`;
+      
+      outputSec.style.display = 'grid';
+      [0, 1].forEach(function (i) {
+        const col = document.getElementById('col-' + i);
+        col.classList.remove('visible');
+        setTimeout(function () { col.classList.add('visible'); }, i * 100);
+      });
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg> Generate Text';
+    }
+  });
+
+  document.querySelectorAll('.btn-copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const text = document.getElementById('col-body-' + btn.getAttribute('data-col')).textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.classList.add('copied');
+        btn.innerHTML = 'Copied!';
+        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = 'Copy'; }, 1200);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

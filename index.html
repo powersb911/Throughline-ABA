@@ -229,9 +229,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         <span class="tl-mark">T</span>
         <div>
           <h1>Throughline</h1>
-          <nav class="tl-nav-tabs" style="display: flex; gap: 8px; margin-top: 8px;">
-            <a href="index.html" class="tl-tab active" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--teal-deep); background: var(--teal-tint); border: 1px solid #d2e2db; padding: 4px 12px; border-radius: 999px;">Supervision</a>
-            <a href="family.html" class="tl-tab" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
+          <nav class="tl-nav-tabs" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <a href="index.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
+            <a href="family.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
           </nav>
         </div>
       </div>
@@ -367,9 +367,17 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   let loadingTimer = null;
   let loadingIdx = 0;
 
-  // Show/hide clear button based on input content
+  // Restore draft from sessionStorage on load
+  var savedSupervision = sessionStorage.getItem('tl-supervision-input');
+  if (savedSupervision) {
+    input.value = savedSupervision;
+    clearBtn.style.display = 'inline-flex';
+  }
+
+  // Show/hide clear button based on input content; save draft
   input.addEventListener('input', function () {
     clearBtn.style.display = input.value.trim() ? 'inline-flex' : 'none';
+    sessionStorage.setItem('tl-supervision-input', input.value);
   });
 
   // Clear button
@@ -378,6 +386,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     clearBtn.style.display = 'none';
     outputSec.style.display = 'none';
     hideError();
+    sessionStorage.removeItem('tl-supervision-input');
   });
 
   // Voice / dictation

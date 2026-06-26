@@ -484,20 +484,41 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     return row;
   }
 
+  function saveCaregivers() {
+    sessionStorage.setItem('tl-family-caregivers', JSON.stringify(getCaregivers()));
+  }
+
+  function buildRowWithValue(isPrimary, value) {
+    var row = buildRow(isPrimary);
+    if (value) row.querySelector('select').value = value;
+    row.querySelector('select').addEventListener('change', saveCaregivers);
+    return row;
+  }
+
   function refreshCareState() {
     const rows = careRows.querySelectorAll('.tl-care-row');
     rows.forEach(function (r, i) {
       r.querySelector('.tl-care-role').textContent = i === 0 ? 'Primary' : 'Also';
     });
     addCareBtn.disabled = rows.length >= MAX_CARE;
+    saveCaregivers();
   }
 
-  careRows.appendChild(buildRow(true));
+  // Restore caregiver rows from sessionStorage, or build default
+  var savedCaregivers = null;
+  try { savedCaregivers = JSON.parse(sessionStorage.getItem('tl-family-caregivers')); } catch (e) {}
+  if (savedCaregivers && savedCaregivers.length) {
+    savedCaregivers.forEach(function (val, i) {
+      careRows.appendChild(buildRowWithValue(i === 0, val));
+    });
+  } else {
+    careRows.appendChild(buildRowWithValue(true, null));
+  }
   refreshCareState();
 
   addCareBtn.addEventListener('click', function () {
     if (careRows.querySelectorAll('.tl-care-row').length >= MAX_CARE) return;
-    careRows.appendChild(buildRow(false));
+    careRows.appendChild(buildRowWithValue(false, null));
     refreshCareState();
   });
 
@@ -506,8 +527,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   }
 
   /* ---------- Input housekeeping ---------- */
+  // Restore draft from sessionStorage on load
+  var savedFamily = sessionStorage.getItem('tl-family-input');
+  if (savedFamily) {
+    input.value = savedFamily;
+    clearBtn.style.display = 'inline-flex';
+  }
+
   input.addEventListener('input', function () {
     clearBtn.style.display = input.value.trim() ? 'inline-flex' : 'none';
+    sessionStorage.setItem('tl-family-input', input.value);
   });
 
   clearBtn.addEventListener('click', function () {
@@ -515,6 +544,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     clearBtn.style.display = 'none';
     outputSec.style.display = 'none';
     hideError();
+    sessionStorage.removeItem('tl-family-input');
   });
 
   /* ---------- Voice / dictation ---------- */
