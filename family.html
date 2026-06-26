@@ -657,7 +657,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     outputSec.style.display = 'none';
 
     try {
-      var res = await fetch('/.netlify/functions/generate-family', {
+      var res = await fetch('/api/generate-family', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input: text, caregivers: getCaregivers() }),
