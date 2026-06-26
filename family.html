@@ -278,6 +278,34 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .tl-actions-left { justify-content: space-between; }
   .tl-select-shell { max-width: none; }
 }
+
+/* Save bar */
+.tl-save-bar {
+  margin-top: 18px; padding: 16px 20px;
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 16px; box-shadow: 0 2px 12px rgba(34,27,33,0.05);
+}
+.tl-save-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tl-save-label { font-size: 14px; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.tl-save-field { flex: 1; min-width: 160px; max-width: 240px; }
+.tl-save-field input {
+  width: 100%; padding: 9px 14px; background: #fffdf9;
+  border: 1px solid var(--line); border-radius: 10px;
+  font-family: 'Public Sans', sans-serif; font-size: 14px;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); transition: border-color 0.16s, box-shadow 0.16s;
+}
+.tl-save-field input:focus { outline: none; border-color: var(--plum); box-shadow: 0 0 0 4px rgba(109,70,96,0.10); }
+.btn-save-note {
+  padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  background: var(--plum); color: var(--paper-2); border: none;
+  box-shadow: 0 4px 12px rgba(109,70,96,0.22); transition: background 0.15s, transform 0.13s;
+}
+.btn-save-note:hover:not(:disabled) { background: var(--plum-deep); transform: translateY(-1px); }
+.btn-save-note svg { width: 15px; height: 15px; }
+.tl-save-ok { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--plum-deep); }
+.tl-save-ok svg { width: 15px; height: 15px; }
+@media (max-width: 560px) { .tl-save-inner { flex-direction: column; align-items: stretch; } .tl-save-field { max-width: none; } }
 </style>
 </head>
 <body>
@@ -293,6 +321,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           <nav class="tl-nav-tabs" style="display: flex; gap: 8px; margin-top: 8px;">
             <a href="index.html" class="tl-tab" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
             <a href="family.html" class="tl-tab active" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--plum-deep); background: var(--plum-tint); border: 1px solid #e0cdda; padding: 4px 12px; border-radius: 999px;">Family Engagement</a>
+            <a href="library.html" class="tl-tab" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Library</a>
           </nav>
         </div>
       </div>
@@ -406,6 +435,26 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         <div class="tl-col-body" id="col-body-2"></div>
       </article>
     </section>
+
+    <!-- Save bar -->
+    <div class="tl-save-bar" id="save-bar" style="display:none;">
+      <div class="tl-save-inner">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--ink-faint);flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="tl-save-label">Save to folder</span>
+        <div class="tl-save-field">
+          <input type="text" id="folder-input" list="folder-suggestions" placeholder="Learner initials, e.g. BP" maxlength="6" autocomplete="off" spellcheck="false" />
+          <datalist id="folder-suggestions"></datalist>
+        </div>
+        <button class="btn-save-note" id="save-note-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save note
+        </button>
+        <span class="tl-save-ok" id="save-ok" style="display:none;">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Saved to <strong id="save-ok-folder"></strong>
+        </span>
+      </div>
+    </div>
 
     <footer class="tl-foot">
       Draft output — the supervising BCBA reviews and approves every note before it is submitted.
@@ -543,6 +592,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     input.value = '';
     clearBtn.style.display = 'none';
     outputSec.style.display = 'none';
+    saveBar.style.display = 'none';
     hideError();
     sessionStorage.removeItem('tl-family-input');
   });
@@ -620,6 +670,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       document.getElementById('col-body-2').textContent = data.column3 || '';
 
       outputSec.style.display = 'grid';
+      saveBar.style.display = 'block';
+      saveOk.style.display = 'none';
+      saveNoteBtn.style.display = '';
+      folderInput.value = '';
+      refreshFolderSuggestions();
       [0, 1, 2].forEach(function (i) {
         var col = document.getElementById('col-' + i);
         col.classList.remove('visible');
@@ -678,6 +733,52 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         }, 2400);
       });
     });
+  });
+
+  /* ---------- Library helpers ---------- */
+  function getLibrary() {
+    try { return JSON.parse(localStorage.getItem('tl-library')) || {}; } catch(e) { return {}; }
+  }
+  function saveLibrary(lib) { localStorage.setItem('tl-library', JSON.stringify(lib)); }
+  function refreshFolderSuggestions() {
+    var list = document.getElementById('folder-suggestions');
+    list.innerHTML = '';
+    Object.keys(getLibrary()).sort().forEach(function(k) {
+      var opt = document.createElement('option'); opt.value = k; list.appendChild(opt);
+    });
+  }
+
+  var saveBar      = document.getElementById('save-bar');
+  var folderInput  = document.getElementById('folder-input');
+  var saveNoteBtn  = document.getElementById('save-note-btn');
+  var saveOk       = document.getElementById('save-ok');
+  var saveOkFolder = document.getElementById('save-ok-folder');
+
+  refreshFolderSuggestions();
+
+  saveNoteBtn.addEventListener('click', function() {
+    var initials = folderInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!initials) { folderInput.focus(); return; }
+    var lib = getLibrary();
+    if (!lib[initials]) lib[initials] = [];
+    lib[initials].unshift({
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: 'family',
+      col1: document.getElementById('col-body-0').textContent,
+      col2: document.getElementById('col-body-1').textContent,
+      col3: document.getElementById('col-body-2').textContent
+    });
+    saveLibrary(lib);
+    refreshFolderSuggestions();
+    saveNoteBtn.style.display = 'none';
+    saveOkFolder.textContent = initials;
+    saveOk.style.display = 'flex';
+    setTimeout(function() {
+      saveNoteBtn.style.display = '';
+      saveOk.style.display = 'none';
+      folderInput.value = '';
+    }, 3000);
   });
 
 })();
