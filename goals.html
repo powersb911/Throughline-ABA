@@ -91,7 +91,14 @@ input::placeholder, textarea::placeholder { color: #a7aea8; font-weight: 400; }
 .tl-divider { grid-column: 1 / -1; height: 1px; background: var(--line); margin: 6px 0; }
 
 /* Actions */
-.tl-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 20px; }
+.tl-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
+.btn-clear {
+  padding: 11px 16px; border-radius: 11px; font-size: 14px; font-weight: 600;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); transition: all 0.16s;
+}
+.btn-clear:hover { border-color: var(--ink-faint); color: var(--ink); }
+.btn-clear svg { width: 15px; height: 15px; }
 button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inline-flex; align-items: center; gap: 8px; border: none; }
 button:disabled { cursor: not-allowed; opacity: 0.55; }
 
@@ -357,6 +364,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       </div>
 
       <div class="tl-actions">
+        <button class="btn-clear" id="clear-btn" style="display:none;">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Clear
+        </button>
         <button class="btn-generate" id="generate-btn" disabled>
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
           Build Program
@@ -596,6 +607,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   var domainSel    = document.getElementById('f-domain');
   var skillSel     = document.getElementById('f-skill');
   var generateBtn  = document.getElementById('generate-btn');
+  var clearBtn     = document.getElementById('clear-btn');
   var errorBox     = document.getElementById('error-box');
   var errorMsg     = document.getElementById('error-msg');
   var outputWrap   = document.getElementById('output-wrap');
@@ -621,7 +633,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     try {
       var draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
       if (!draft) return;
-      // Restore domain first so skill area populates
       if (draft['f-domain']) {
         domainSel.value = draft['f-domain'];
         populateSkillArea(draft['f-domain'], draft['f-skill']);
@@ -632,14 +643,50 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         if (el && draft[id] != null) el.value = draft[id];
       });
       updateGenerateBtn();
+      clearBtn.style.display = 'inline-flex';
+    } catch (e) {}
+  })();
+
+  (function restoreOutput() {
+    try {
+      var out = JSON.parse(sessionStorage.getItem('tl-goals-output'));
+      if (!out) return;
+      lastResult = out;
+      OUTPUT_KEYS.forEach(function (key) {
+        document.getElementById('out-' + key).textContent = out[key] || '';
+      });
+      outputWrap.style.display = 'block';
+      saveOk.style.display = 'none';
+      saveBtn.style.display = '';
+      clearBtn.style.display = 'inline-flex';
+      refreshFolderSelect();
+      document.querySelectorAll('.tl-card').forEach(function(c) { c.classList.add('visible'); });
     } catch (e) {}
   })();
 
   FIELDS.forEach(function (id) {
     var el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener('change', function () { saveDraft(); updateGenerateBtn(); });
-    el.addEventListener('input', function () { saveDraft(); updateGenerateBtn(); });
+    el.addEventListener('change', function () { saveDraft(); updateGenerateBtn(); clearBtn.style.display = 'inline-flex'; });
+    el.addEventListener('input', function () { saveDraft(); updateGenerateBtn(); clearBtn.style.display = 'inline-flex'; });
+  });
+
+  // ── Clear button ─────────────────────────────────────────────────────────
+  clearBtn.addEventListener('click', function () {
+    FIELDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.tagName === 'SELECT' ? (el.selectedIndex = 0) : (el.value = '');
+    });
+    domainSel.value = '';
+    populateSkillArea('', null);
+    updateGenerateBtn();
+    outputWrap.style.display = 'none';
+    lastResult = null;
+    hideError();
+    sessionStorage.removeItem(DRAFT_KEY);
+    sessionStorage.removeItem('tl-goals-output');
+    clearBtn.style.display = 'none';
   });
 
   // ── Domain → Skill Area cascade ─────────────────────────────────────────
@@ -647,6 +694,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     populateSkillArea(domainSel.value, null);
     updateGenerateBtn();
     saveDraft();
+    clearBtn.style.display = 'inline-flex';
   });
 
   function populateSkillArea(domainVal, selectVal) {
@@ -732,9 +780,14 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         document.getElementById('out-' + key).textContent = data[key] || '';
       });
 
+      var toSave = { domain: domainSel.value, skillArea: skillSel.value };
+      OUTPUT_KEYS.forEach(function(k) { toSave[k] = data[k] || ''; });
+      sessionStorage.setItem('tl-goals-output', JSON.stringify(toSave));
+
       outputWrap.style.display = 'block';
       saveOk.style.display = 'none';
       saveBtn.style.display = '';
+      clearBtn.style.display = 'inline-flex';
       refreshFolderSelect();
 
       // Stagger card animations

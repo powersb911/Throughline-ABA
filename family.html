@@ -600,6 +600,23 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     clearBtn.style.display = 'inline-flex';
   }
 
+  (function restoreOutput() {
+    try {
+      var out = JSON.parse(sessionStorage.getItem('tl-family-output'));
+      if (!out) return;
+      document.getElementById('col-body-0').textContent = out.col1;
+      document.getElementById('col-body-1').textContent = out.col2;
+      document.getElementById('col-body-2').textContent = out.col3;
+      outputSec.style.display = 'grid';
+      saveBar.style.display = 'block';
+      saveOk.style.display = 'none';
+      saveNoteBtn.style.display = '';
+      refreshFolderSelect();
+      [0,1,2].forEach(function(i) { document.getElementById('col-' + i).classList.add('visible'); });
+      clearBtn.style.display = 'inline-flex';
+    } catch(e) {}
+  })();
+
   input.addEventListener('input', function () {
     clearBtn.style.display = input.value.trim() ? 'inline-flex' : 'none';
     sessionStorage.setItem('tl-family-input', input.value);
@@ -612,6 +629,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     saveBar.style.display = 'none';
     hideError();
     sessionStorage.removeItem('tl-family-input');
+    sessionStorage.removeItem('tl-family-output');
   });
 
   /* ---------- Voice / dictation ---------- */
@@ -688,6 +706,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       document.getElementById('col-body-0').textContent = data.column1 || '';
       document.getElementById('col-body-1').textContent = data.column2 || '';
       document.getElementById('col-body-2').textContent = data.column3 || '';
+      sessionStorage.setItem('tl-family-output', JSON.stringify({
+        col1: data.column1 || '', col2: data.column2 || '', col3: data.column3 || ''
+      }));
 
       outputSec.style.display = 'grid';
       saveBar.style.display = 'block';
