@@ -20,7 +20,9 @@ MATERIALS
 For DTT goals with physical stimuli: list specific materials and append "data sheet, token board, stoplight visual, help cards" unless otherwise indicated. For NET or vocal goals: write "None or naturally occurring materials, such as [context-appropriate examples]." Write "N/A" only when truly no materials are required.
 
 SD
-Use "(Vary)" prefix and provide 4-8 varied example SDs that promote generalization and prevent rote responding. For naturally occurring antecedents (manding, functional communication), describe the antecedent condition instead of discrete SDs.
+For PHYSICAL/RECEPTIVE/MATCHING/SORTING tasks (DTT): the primary antecedent is NON-VERBAL — the act of placing or handing the stimulus to the learner. Lead with this non-verbal SD. Include only 1–2 brief verbal initiating cues (e.g., "Match", "Sort it") for task onset, then note that mass trials may use the non-verbal SD alone after initial verbal instruction. Do NOT generate a list of varied verbal phrases as the primary SD for these task types — that pattern belongs to language goals only.
+For VERBAL/LANGUAGE tasks (manding, tacting, intraverbal, etc.) and NET goals: use "(Vary)" prefix and provide 4–8 varied example SDs that promote generalization and prevent rote responding.
+For naturally occurring antecedents (manding, functional communication): describe the antecedent condition instead of discrete SDs.
 
 PROCEDURE
 Always use this exact numbered core sequence, adapting Steps 1 and 4 to the specific skill:
@@ -62,6 +64,9 @@ Define exactly two scoring categories:
 • Prompted/Incorrect (-): what counts as prompted or an incorrect response, including no response and target behaviors
 
 ━━━ RULES ━━━
+- ADDITIONAL NOTES override structured dropdown fields when there is any conflict. If ADDITIONAL NOTES specify a mastery threshold, accuracy percentage, or session/trial count, use ONLY those values in the OBJECTIVE — do NOT blend them with the MASTERY CRITERIA field. The notes represent the clinician's explicit specification and always win.
+- Do NOT repeat or combine conflicting criteria in one sentence. A goal statement must have exactly ONE mastery threshold. Choose the one from ADDITIONAL NOTES if provided; otherwise use MASTERY CRITERIA.
+- When ADDITIONAL NOTES contain a behavioral definition, operational criterion, or specific targets, integrate them precisely into the relevant section rather than appending them as an addendum to a separately generated statement. Never output the same information twice in one section.
 - Use precise ABA/VB terminology throughout: SD, HRE, DTT, NET, BIP, mand, tact, intraverbal, echoic, FM imitation, GM imitation, least-to-most, probe, mass trial, AO3, IOA, etc.
 - Refer to the client as "the learner" or "the client" consistently throughout all sections.
 - Scale detail to the skill — complex skills get richer SD variation and more detailed procedure notes.
@@ -71,16 +76,22 @@ Define exactly two scoring categories:
 {"objective":"...","location":"...","materials":"...","sd":"...","procedure":"...","promptingHierarchy":"...","promptingProcedure":"...","responseRecording":"..."}`;
 
 function buildInputString(fields) {
+  const notes = fields.notes || "None";
+  const masteryCriteria = fields.masteryCriteria || "80% across 3 consecutive sessions";
+  const masteryLine = notes !== "None"
+    ? `MASTERY CRITERIA (default — override with any criteria specified in ADDITIONAL NOTES): ${masteryCriteria}`
+    : `MASTERY CRITERIA: ${masteryCriteria}`;
+
   return [
     `DOMAIN: ${fields.domain}`,
     `SKILL AREA: ${fields.skillArea}`,
     `METHODOLOGY: ${fields.methodology || "Not specified"}`,
     `LOCATION PREFERENCE: ${fields.location || "Not specified"}`,
-    `MASTERY CRITERIA: ${fields.masteryCriteria || "80% across 3 consecutive sessions"}`,
+    masteryLine,
     `PROMPT HIERARCHY TYPE: ${fields.promptType || "Not specified"}`,
     `MATERIALS: ${fields.materials || "Not specified"}`,
     `ASSESSMENT REFERENCE: ${fields.assessment || "N/A"}`,
-    `ADDITIONAL NOTES: ${fields.notes || "None"}`,
+    `ADDITIONAL NOTES (takes priority over fields above when there is any conflict): ${notes}`,
   ].join("\n");
 }
 

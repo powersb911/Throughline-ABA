@@ -200,6 +200,38 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .btn-copy.copied { background: var(--teal-tint); color: var(--teal-deep); border-color: #cfe0d8; }
 .btn-copy svg { width: 14px; height: 14px; }
 
+.tl-card-btn-group { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.btn-edit {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  padding: 7px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
+  background: transparent; color: var(--teal);
+  border: 1px solid var(--teal); transition: all 0.15s; white-space: nowrap;
+}
+.btn-edit:hover { background: var(--teal-tint); }
+.btn-edit svg { width: 13px; height: 13px; }
+.btn-save-edit {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  padding: 7px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
+  background: var(--teal); color: var(--paper-2);
+  border: 1px solid var(--teal); transition: all 0.15s; white-space: nowrap;
+}
+.btn-save-edit:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+.btn-cancel-edit {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  padding: 7px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); transition: all 0.15s; white-space: nowrap;
+}
+.btn-cancel-edit:hover { border-color: var(--ink-faint); color: var(--ink); }
+.card-edit-area {
+  width: 100%; min-height: 80px; resize: vertical;
+  background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--teal); border-radius: 10px;
+  padding: 12px 14px; font-family: 'Public Sans', sans-serif;
+  font-size: 14.5px; line-height: 1.72;
+  outline: none; box-shadow: 0 0 0 3px rgba(47,107,94,0.10);
+}
+
 .tl-col-sub {
   font-size: 12px; color: var(--ink-faint); line-height: 1.45;
   margin: 0 0 14px; padding-bottom: 13px;
@@ -456,6 +488,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       refreshFolderSelect();
       [0,1,2].forEach(function(i) { document.getElementById('col-' + i).classList.add('visible'); });
       clearBtn.style.display = 'inline-flex';
+      initInlineEdit();
     } catch(e) {}
   })();
 
@@ -559,6 +592,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       saveOk.style.display = 'none';
       saveNoteBtn.style.display = '';
       refreshFolderSelect();
+      initInlineEdit();
       // stagger the column animations
       [0, 1, 2].forEach(function (i) {
         var col = document.getElementById('col-' + i);
@@ -596,6 +630,63 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   function hideError() {
     errorBox.style.display = 'none';
     errorMsg.textContent = '';
+  }
+
+  // Inline edit
+  var PENCIL_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+
+  function initInlineEdit() {
+    document.querySelectorAll('.tl-col').forEach(function(card) {
+      var head = card.querySelector('.tl-col-head');
+      var body = card.querySelector('.tl-col-body');
+      if (!body || !head || !body.textContent.trim()) return;
+      var copyBtn = head.querySelector('.btn-copy');
+      if (!copyBtn || head.querySelector('.btn-edit')) return;
+
+      var editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.innerHTML = PENCIL_SVG + ' Edit';
+
+      var group = document.createElement('div');
+      group.className = 'tl-card-btn-group';
+      copyBtn.parentNode.insertBefore(group, copyBtn);
+      group.appendChild(copyBtn);
+      group.appendChild(editBtn);
+
+      editBtn.addEventListener('click', function() {
+        var originalText = body.textContent;
+        var ta = document.createElement('textarea');
+        ta.className = 'card-edit-area';
+        ta.value = originalText;
+        body.textContent = '';
+        body.appendChild(ta);
+        ta.style.height = ta.scrollHeight + 'px';
+        ta.focus();
+
+        copyBtn.style.display = 'none';
+        editBtn.style.display = 'none';
+
+        var saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-save-edit';
+        saveBtn.textContent = 'Save';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-cancel-edit';
+        cancelBtn.textContent = 'Cancel';
+        group.appendChild(saveBtn);
+        group.appendChild(cancelBtn);
+
+        function exitEdit(text) {
+          body.textContent = text;
+          copyBtn.style.display = '';
+          editBtn.style.display = '';
+          saveBtn.remove();
+          cancelBtn.remove();
+        }
+
+        saveBtn.addEventListener('click', function() { exitEdit(ta.value); });
+        cancelBtn.addEventListener('click', function() { exitEdit(originalText); });
+      });
+    });
   }
 
   // Copy buttons
