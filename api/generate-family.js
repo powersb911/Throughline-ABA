@@ -131,6 +131,7 @@ export default async function handler(req, res) {
     const parsed = parseModelJSON(text);
     return res.status(200).json({ column1: parsed.column1 || "", column2: parsed.column2 || "", column3: parsed.column3 || "" });
   } catch (err) {
+    console.error("[generate-family] handler error:", err);
     return res.status(500).json({ error: "Something went wrong generating the note. Please try again." });
   }
 }

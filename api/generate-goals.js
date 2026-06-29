@@ -289,9 +289,7 @@ export default async function handler(req, res) {
       responseRecording: parsed.responseRecording || "",
     });
   } catch (err) {
-    console.error("generate-goals error:", err);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong generating the program. Please try again." });
+    console.error("[generate-goals] handler error:", err);
+    return res.status(500).json({ error: "Something went wrong generating the program. Please try again." });
   }
 }
