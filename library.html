@@ -23,6 +23,9 @@ body {
   --teal: #2f6b5e;
   --teal-deep: #234f46;
   --teal-tint: #e7efea;
+  --navy: #2d4660;
+  --navy-deep: #203347;
+  --navy-tint: #e6ecf2;
   --gold: #a87f3d;
   --gold-soft: #f2ead9;
   --clay: #b0573c;
@@ -118,6 +121,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .lib-type-pill.supervision { background: var(--teal-tint); color: var(--teal-deep); }
 .lib-type-pill.family { background: var(--plum-tint); color: var(--plum-deep); }
+.lib-type-pill.goal { background: var(--navy-tint); color: var(--navy-deep); }
 
 .btn-delete-folder {
   position: absolute; top: 14px; right: 14px;
@@ -265,6 +269,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           <nav style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
             <a href="index.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
             <a href="family.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
+            <a href="goals.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Goal Builder</a>
             <a href="library.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--plum-deep); background: var(--plum-tint); border: 1px solid #e0cdda; padding: 4px 12px; border-radius: 999px;">Library</a>
           </nav>
         </div>
@@ -348,6 +353,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     family:      ['Purpose of Meeting', 'Meeting Summary', 'BCBA Follow-Up']
   };
 
+  var GOAL_LABELS = ['Objective', 'Location', 'Materials', 'SD — Discriminative Stimulus', 'Teaching Instructions', 'Prompting Hierarchy', 'Prompting Procedure', 'Response Recording'];
+  var GOAL_KEYS   = ['objective', 'location', 'materials', 'sd', 'procedure', 'promptingHierarchy', 'promptingProcedure', 'responseRecording'];
+
   function getLibrary() {
     try { return JSON.parse(localStorage.getItem('tl-library')) || {}; } catch(e) { return {}; }
   }
@@ -360,9 +368,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   }
 
   function countTypes(notes) {
-    var sup = notes.filter(function(n) { return n.type === 'supervision'; }).length;
-    var fam = notes.filter(function(n) { return n.type === 'family'; }).length;
-    return { sup: sup, fam: fam };
+    var sup  = notes.filter(function(n) { return n.type === 'supervision'; }).length;
+    var fam  = notes.filter(function(n) { return n.type === 'family'; }).length;
+    var goal = notes.filter(function(n) { return n.type === 'goal'; }).length;
+    return { sup: sup, fam: fam, goal: goal };
   }
 
   /* ── Folders view ── */
@@ -389,8 +398,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         '<p class="lib-folder-name">' + escHtml(initials) + '</p>' +
         '<p class="lib-folder-meta">' + notes.length + ' note' + (notes.length !== 1 ? 's' : '') + (lastDate ? '<br>' + lastDate : '') + '</p>' +
         '<div class="lib-folder-types">' +
-          (types.sup ? '<span class="lib-type-pill supervision">Supervision</span>' : '') +
-          (types.fam ? '<span class="lib-type-pill family">Family</span>' : '') +
+          (types.sup  ? '<span class="lib-type-pill supervision">Supervision</span>' : '') +
+          (types.fam  ? '<span class="lib-type-pill family">Family</span>' : '') +
+          (types.goal ? '<span class="lib-type-pill goal">Goals</span>' : '') +
         '</div>' +
         '<button class="btn-delete-folder" title="Delete folder" data-folder="' + escHtml(initials) + '">' +
           '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
@@ -438,7 +448,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     var notes = (lib[currentFolder] || []);
 
     var filtered = query ? notes.filter(function(n) {
-      var haystack = (n.col1 + ' ' + n.col2 + ' ' + n.col3 + ' ' + formatDate(n.date)).toLowerCase();
+      var haystack;
+      if (n.type === 'goal') {
+        haystack = (GOAL_KEYS.map(function(k) { return n[k] || ''; }).join(' ') + ' ' + formatDate(n.date)).toLowerCase();
+      } else {
+        haystack = ((n.col1 || '') + ' ' + (n.col2 || '') + ' ' + (n.col3 || '') + ' ' + formatDate(n.date)).toLowerCase();
+      }
       return haystack.indexOf(query) !== -1;
     }) : notes;
 
@@ -452,11 +467,52 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     noResults.style.display = 'none';
 
     filtered.forEach(function(note) {
-      var labels = COL_LABELS[note.type] || COL_LABELS.supervision;
-      var typePill = note.type === 'family'
-        ? '<span class="lib-type-pill family">Family Engagement</span>'
-        : '<span class="lib-type-pill supervision">Supervision</span>';
-      var preview = (note.col1 || '').replace(/\s+/g, ' ').slice(0, 120) + ((note.col1 || '').length > 120 ? '…' : '');
+      var isGoal = note.type === 'goal';
+      var typePill = isGoal
+        ? '<span class="lib-type-pill goal">Goal Builder</span>'
+        : note.type === 'family'
+          ? '<span class="lib-type-pill family">Family Engagement</span>'
+          : '<span class="lib-type-pill supervision">Supervision</span>';
+
+      var previewText = isGoal
+        ? (note.objective || note.skillArea || '')
+        : (note.col1 || '');
+      var preview = previewText.replace(/\s+/g, ' ').slice(0, 120) + (previewText.length > 120 ? '…' : '');
+
+      var bodyHtml;
+      if (isGoal) {
+        var goalSubtitle = note.domain && note.skillArea
+          ? '<div style="font-size:12.5px;color:var(--navy-deep);background:var(--navy-tint);border:1px solid #cbd7e3;border-radius:8px;padding:5px 10px;margin-bottom:14px;display:inline-block;font-weight:600;">' + escHtml(note.domain) + ' — ' + escHtml(note.skillArea) + '</div>'
+          : '';
+        bodyHtml = goalSubtitle +
+          '<div style="display:flex;flex-direction:column;gap:14px;">' +
+          GOAL_KEYS.map(function(key, i) {
+            return '<div class="lib-note-col">' +
+              '<div class="lib-note-col-label">' + escHtml(GOAL_LABELS[i]) + '</div>' +
+              '<div class="lib-note-col-text" data-coltext="' + i + '">' + escHtml(note[key] || '') + '</div>' +
+              '<button class="btn-copy-col" data-copycol="' + i + '" data-copygoal="1">' +
+                '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+                'Copy' +
+              '</button>' +
+            '</div>';
+          }).join('') +
+          '</div>';
+      } else {
+        var labels = COL_LABELS[note.type] || COL_LABELS.supervision;
+        bodyHtml = '<div class="lib-note-cols">' +
+          [0,1,2].map(function(i) {
+            var colKey = 'col' + (i+1);
+            return '<div class="lib-note-col">' +
+              '<div class="lib-note-col-label">' + escHtml(labels[i]) + '</div>' +
+              '<div class="lib-note-col-text" data-coltext="' + i + '">' + escHtml(note[colKey] || '') + '</div>' +
+              '<button class="btn-copy-col" data-copycol="' + i + '">' +
+                '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+                'Copy' +
+              '</button>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }
 
       var card = document.createElement('div');
       card.className = 'lib-note-card';
@@ -474,19 +530,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           '<div class="lib-note-chevron"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>' +
         '</div>' +
         '<div class="lib-note-body">' +
-          '<div class="lib-note-cols">' +
-            [0,1,2].map(function(i) {
-              var colKey = 'col' + (i+1);
-              return '<div class="lib-note-col">' +
-                '<div class="lib-note-col-label">' + escHtml(labels[i]) + '</div>' +
-                '<div class="lib-note-col-text" data-coltext="' + i + '">' + escHtml(note[colKey] || '') + '</div>' +
-                '<button class="btn-copy-col" data-copycol="' + i + '">' +
-                  '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-                  'Copy' +
-                '</button>' +
-              '</div>';
-            }).join('') +
-          '</div>' +
+          bodyHtml +
           '<div class="lib-note-actions">' +
             '<button class="btn-delete-note" data-deleteid="' + note.id + '">' +
               '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +

@@ -57,41 +57,47 @@ body {
   box-shadow: 28px 28px 60px rgba(27,33,36,0.06);
 }
 .tl-panel h2 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 23px; margin: 0 0 6px; letter-spacing: -0.01em; }
-.tl-panel-desc { margin: 0 0 24px; color: var(--ink-soft); max-width: 66ch; font-size: 14.5px; }
+.tl-panel-desc { margin: 0 0 24px; color: var(--ink-soft); max-width: 72ch; font-size: 14.5px; }
 
-/* Minimal Grid */
-.tl-grid-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 18px; }
-@media (max-width: 768px) { .tl-grid-inputs { grid-template-columns: 1fr; } }
-
-.tl-field-block { display: flex; flex-direction: column; gap: 6px; }
-.tl-field-block.full-width { grid-column: 1 / -1; }
-.tl-field-label { font-size: 13px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.02em; text-transform: uppercase; }
+/* Form Grid */
+.tl-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 0; }
+@media (max-width: 680px) { .tl-form-grid { grid-template-columns: 1fr; } }
+.tl-field { display: flex; flex-direction: column; gap: 5px; }
+.tl-field.full { grid-column: 1 / -1; }
+.tl-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase; }
+.tl-label-hint { font-size: 11.5px; color: var(--ink-faint); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; }
 
 input[type="text"], select, textarea {
   width: 100%; background: #fffdf9; color: var(--ink);
   border: 1px solid var(--line); border-radius: 11px;
   padding: 11px 14px; font-family: 'Public Sans', sans-serif;
-  font-size: 14.5px; font-weight: 500;
+  font-size: 14px; font-weight: 500;
   transition: border-color 0.16s, box-shadow 0.16s;
 }
 input[type="text"]:focus, select:focus, textarea:focus {
   outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px rgba(45,70,96,0.10);
 }
-select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 38px; }
-.tl-select-shell { position: relative; width: 100%; }
-.tl-select-shell svg {
-  position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+input[type="text"]:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
+select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 36px; }
+.tl-select-wrap { position: relative; }
+.tl-select-wrap svg {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   width: 15px; height: 15px; color: var(--ink-faint); pointer-events: none;
 }
-textarea { min-height: 100px; resize: vertical; line-height: 1.65; }
+textarea { min-height: 90px; resize: vertical; line-height: 1.6; font-size: 14.5px; }
 input::placeholder, textarea::placeholder { color: #a7aea8; font-weight: 400; }
 
+/* Divider */
+.tl-divider { grid-column: 1 / -1; height: 1px; background: var(--line); margin: 6px 0; }
+
 /* Actions */
-.tl-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 18px; }
-button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inline-flex; align-items: center; gap: 8px; }
+.tl-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 20px; }
+button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inline-flex; align-items: center; gap: 8px; border: none; }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+
 .btn-generate {
-  padding: 13px 24px; border-radius: 12px; font-size: 15px; font-weight: 600;
-  background: var(--navy); color: var(--paper-2); border: none;
+  padding: 13px 28px; border-radius: 12px; font-size: 15px; font-weight: 600;
+  background: var(--navy); color: var(--paper-2);
   box-shadow: 0 6px 18px rgba(45,70,96,0.26); transition: all 0.15s;
 }
 .btn-generate:hover:not(:disabled) { background: var(--navy-deep); transform: translateY(-1px); box-shadow: 0 9px 24px rgba(45,70,96,0.32); }
@@ -99,24 +105,86 @@ button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inlin
 .spin { animation: spin 0.9s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Output */
-.tl-output { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 22px; }
-@media (max-width: 880px) { .tl-output { grid-template-columns: 1fr; } }
-.tl-col {
-  background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 22px;
-  box-shadow: 28px 28px 60px rgba(27,33,36,0.06); border-top: 3px solid var(--navy);
-  opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease;
+/* Error */
+.tl-error {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 16px; padding: 12px 14px; border-radius: 11px;
+  background: #faece7; color: #8c3a22; font-size: 13.5px; font-weight: 500;
+  border: 1px solid #eccfc4;
 }
-.tl-col.visible { opacity: 1; transform: translateY(0); }
-.tl-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.tl-col-head h3 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 18px; margin: 0; line-height: 1.25; }
+.tl-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Output */
+.tl-output-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.tl-out-row { display: grid; gap: 16px; }
+.tl-out-row.cols-1 { grid-template-columns: 1fr; }
+.tl-out-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 860px) { .tl-out-row.cols-2 { grid-template-columns: 1fr; } }
+
+.tl-card {
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 18px; padding: 20px 22px 22px;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06);
+  border-top: 3px solid var(--navy);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.tl-card.visible { opacity: 1; transform: translateY(0); }
+
+.tl-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px;
+}
+.tl-card-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--navy); background: var(--navy-tint);
+  padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd7e3;
+  white-space: nowrap; flex-shrink: 0;
+}
+.tl-card-body {
+  font-size: 14px; line-height: 1.72; color: #272c2e; white-space: pre-wrap;
+}
+
 .btn-copy {
-  padding: 8px 13px; border-radius: 9px; font-size: 12.5px; font-weight: 600;
-  background: var(--navy); color: var(--paper-2); border: 1px solid var(--navy); transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  background: var(--navy); color: var(--paper-2);
+  border: 1px solid var(--navy); transition: all 0.15s; white-space: nowrap;
 }
 .btn-copy:hover { background: var(--navy-deep); border-color: var(--navy-deep); }
 .btn-copy.copied { background: var(--navy-tint); color: var(--navy-deep); border-color: #cbd7e3; }
-.tl-col-body { font-size: 14.5px; line-height: 1.68; color: #272c2e; white-space: pre-wrap; }
+.btn-copy svg { width: 13px; height: 13px; }
+
+/* Save bar */
+.tl-save-bar {
+  margin-top: 18px; padding: 16px 20px;
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 16px; box-shadow: 0 2px 12px rgba(34,27,33,0.05);
+}
+.tl-save-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tl-save-label { font-size: 14px; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.tl-save-field { flex: 1; min-width: 160px; max-width: 240px; }
+.tl-save-field input {
+  width: 100%; padding: 9px 14px; background: #fffdf9;
+  border: 1px solid var(--line); border-radius: 10px;
+  font-family: 'Public Sans', sans-serif; font-size: 14px;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); transition: border-color 0.16s, box-shadow 0.16s;
+}
+.tl-save-field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px rgba(45,70,96,0.10); }
+.btn-save {
+  padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  background: var(--navy); color: var(--paper-2);
+  box-shadow: 0 4px 12px rgba(45,70,96,0.22); transition: background 0.15s, transform 0.13s;
+}
+.btn-save:hover:not(:disabled) { background: var(--navy-deep); transform: translateY(-1px); }
+.btn-save svg { width: 15px; height: 15px; }
+.tl-save-ok { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--navy-deep); }
+.tl-save-ok svg { width: 15px; height: 15px; }
+@media (max-width: 560px) { .tl-save-inner { flex-direction: column; align-items: stretch; } .tl-save-field { max-width: none; } }
+
+.tl-foot { margin-top: 26px; text-align: center; font-size: 12.5px; color: var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -128,60 +196,127 @@ button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inlin
         <span class="tl-mark">T</span>
         <div>
           <h1>Throughline</h1>
-          <nav class="tl-nav-tabs" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <nav style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
             <a href="index.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
             <a href="family.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
             <a href="goals.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--navy-deep); background: var(--navy-tint); border: 1px solid #cbd7e3; padding: 4px 12px; border-radius: 999px;">Goal Builder</a>
+            <a href="library.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Library</a>
           </nav>
         </div>
       </div>
+      <div class="tl-privacy">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        In-session only &middot; nothing stored*
+      </div>
     </header>
 
+    <!-- Input Panel -->
     <section class="tl-panel">
-      <h2>Goal Copy-Paste Generator</h2>
-      <p class="tl-panel-desc">Quickly generate compliant goal and objective text to paste directly into HiRasmus.</p>
+      <h2>Program Builder</h2>
+      <p class="tl-panel-desc">Select the skill domain and area, fill in the details, and generate a complete set of training instructions ready to paste into HiRasmus.</p>
 
-      <div class="tl-grid-inputs">
-        <!-- Goal Title -->
-        <div class="tl-field-block full-width">
-          <label class="tl-field-label">Target Behavior / Goal Title</label>
-          <input type="text" id="goal-title" placeholder="e.g., Manding for items, Independent Handwashing..." />
+      <div class="tl-form-grid">
+
+        <!-- Domain -->
+        <div class="tl-field full">
+          <label class="tl-label" for="f-domain">Skill Domain</label>
+          <div class="tl-select-wrap">
+            <select id="f-domain">
+              <option value="">— Select a domain —</option>
+              <option value="Communication & Language">Communication &amp; Language (Verbal Behavior)</option>
+              <option value="Receptive Language">Receptive Language</option>
+              <option value="Imitation">Imitation</option>
+              <option value="Matching & Sorting">Matching &amp; Sorting</option>
+              <option value="Play & Leisure">Play &amp; Leisure</option>
+              <option value="Social Skills">Social Skills</option>
+              <option value="Adaptive & Self-Care">Adaptive &amp; Self-Care</option>
+              <option value="Emotional Regulation">Emotional Regulation &amp; Behavior</option>
+              <option value="Academic & Cognitive Readiness">Academic &amp; Cognitive Readiness</option>
+              <option value="Motor Skills">Motor Skills</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <!-- Skill Area -->
+        <div class="tl-field full">
+          <label class="tl-label" for="f-skill">Skill Area <span class="tl-label-hint">— updates based on domain</span></label>
+          <div class="tl-select-wrap">
+            <select id="f-skill" disabled>
+              <option value="">— Select a domain first —</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <div class="tl-divider"></div>
+
+        <!-- Methodology -->
+        <div class="tl-field">
+          <label class="tl-label" for="f-method">Methodology</label>
+          <div class="tl-select-wrap">
+            <select id="f-method">
+              <option value="DTT">DTT (Discrete Trial Training)</option>
+              <option value="NET">NET (Natural Environment Training)</option>
+              <option value="Both / Mixed">Both / Mixed</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
         </div>
 
         <!-- Location -->
-        <div class="tl-field-block">
-          <label class="tl-field-label">Location</label>
-          <div class="tl-select-shell">
-            <select id="goal-location">
-              <option value="Clinic">Clinic (Default)</option>
+        <div class="tl-field">
+          <label class="tl-label" for="f-location">Location / Setting</label>
+          <div class="tl-select-wrap">
+            <select id="f-location">
+              <option value="Clinic/Table">Clinic — Table Setting</option>
+              <option value="Throughout Session">Throughout Session (NET)</option>
+              <option value="Multiple Environments">Multiple Environments (Generalization)</option>
               <option value="Home">Home</option>
               <option value="Community">Community</option>
-              <option value="School">School</option>
-              <option value="Store">Store</option>
-              <option value="Varying/Multiple">Varying Locations</option>
             </select>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
 
-        <!-- Methodology -->
-        <div class="tl-field-block">
-          <label class="tl-field-label">Methodology</label>
-          <div class="tl-select-shell">
-            <select id="goal-method">
-              <option value="NET">NET (Natural Environment Training)</option>
-              <option value="DTT">DTT (Discrete Trial Training)</option>
-              <option value="Both">Both / Any</option>
+        <!-- Mastery Criteria -->
+        <div class="tl-field">
+          <label class="tl-label" for="f-mastery">Mastery Criteria</label>
+          <div class="tl-select-wrap">
+            <select id="f-mastery">
+              <option value="80% across 3 consecutive sessions">80% across 3 consecutive sessions</option>
+              <option value="80% across 5 consecutive sessions">80% across 5 consecutive sessions</option>
+              <option value="80% across 10 consecutive sessions">80% across 10 consecutive sessions</option>
+              <option value="90% across 3 consecutive sessions">90% across 3 consecutive sessions</option>
+              <option value="90% across 5 consecutive sessions">90% across 5 consecutive sessions</option>
+              <option value="custom">Custom (describe in notes)</option>
             </select>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
+
+        <!-- Prompt Hierarchy -->
+        <div class="tl-field">
+          <label class="tl-label" for="f-prompt">Prompt Hierarchy Type</label>
+          <div class="tl-select-wrap">
+            <select id="f-prompt">
+              <option value="Physical (Least-to-Most): Gestural → Partial Physical → Full Physical">Physical L-to-M — Gestural → Partial → Full Physical</option>
+              <option value="Verbal (Least-to-Most): Gestural → Partial Verbal → Full Verbal">Verbal L-to-M — Gestural → Partial → Full Verbal</option>
+              <option value="Mixed (Least-to-Most): Gestural → Indirect Verbal → Partial Verbal → Full Verbal">Mixed L-to-M — Gestural → Indirect → Partial → Full Verbal</option>
+              <option value="Gestural + Model (Least-to-Most): Gestural → Model → Full">Gestural + Model — Gestural → Model → Full</option>
+              <option value="Custom (describe in notes)">Custom (describe in notes)</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <div class="tl-divider"></div>
 
         <!-- Assessment -->
-        <div class="tl-field-block">
-          <label class="tl-field-label">Assessment Reference</label>
-          <div class="tl-select-shell">
-            <select id="goal-assessment">
+        <div class="tl-field">
+          <label class="tl-label" for="f-assessment">Assessment Reference <span class="tl-label-hint">optional</span></label>
+          <div class="tl-select-wrap">
+            <select id="f-assessment">
               <option value="N/A">None / General Clinical Need</option>
               <option value="VB-MAPP">VB-MAPP</option>
               <option value="ABLLS-R">ABLLS-R</option>
@@ -193,44 +328,161 @@ button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inlin
         </div>
 
         <!-- Materials -->
-        <div class="tl-field-block">
-          <label class="tl-field-label">Materials Needed?</label>
-          <input type="text" id="goal-materials" placeholder="Leave blank if naturally occurring MOs only..." />
+        <div class="tl-field">
+          <label class="tl-label" for="f-materials">Materials <span class="tl-label-hint">optional</span></label>
+          <input type="text" id="f-materials" placeholder="e.g., picture cards, sorting mats, AAC device…" />
         </div>
 
-        <!-- Extra Shorthand -->
-        <div class="tl-field-block full-width">
-          <label class="tl-field-label">Shorthand Notes (Optional)</label>
-          <textarea id="goal-notes" placeholder="Any baseline data, specific mastery criteria, or specific prompt hierarchies you want included?"></textarea>
+        <!-- Notes -->
+        <div class="tl-field full">
+          <label class="tl-label" for="f-notes">Description / Notes <span class="tl-label-hint">— specific targets, exemplars, mastery criteria details, special considerations</span></label>
+          <textarea id="f-notes" placeholder="e.g., Target: receptive ID of colors across an array of 6 items. Colors: red, blue, green, yellow, orange, purple. Learner currently points to identify. Include 3D objects and 2D picture cards."></textarea>
         </div>
-      </div>
+
+      </div><!-- /form grid -->
 
       <div class="tl-actions">
-        <button class="btn-generate" id="generate-btn">
+        <button class="btn-generate" id="generate-btn" disabled>
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
-          Generate Text
+          Build Program
         </button>
+      </div>
+
+      <div class="tl-error" id="error-box" style="display:none;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="error-msg"></span>
       </div>
     </section>
 
     <!-- Output -->
-    <section class="tl-output" id="output-section" style="display:none;">
-      <article class="tl-col" id="col-0">
-        <div class="tl-col-head">
-          <h3>Target Goal</h3>
-          <button class="btn-copy" data-col="0">Copy</button>
-        </div>
-        <div class="tl-col-body" id="col-body-0"></div>
-      </article>
+    <div id="output-wrap" class="tl-output-wrap" style="display:none;">
 
-      <article class="tl-col" id="col-1">
-        <div class="tl-col-head">
-          <h3>Objective(s) & Rationale</h3>
-          <button class="btn-copy" data-col="1">Copy</button>
+      <!-- Row 1: Objective (full) -->
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-objective">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Objective</span>
+            <button class="btn-copy" data-field="objective">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-objective"></div>
+        </article>
+      </div>
+
+      <!-- Row 2: Location + Materials -->
+      <div class="tl-out-row cols-2">
+        <article class="tl-card" id="card-location">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Location</span>
+            <button class="btn-copy" data-field="location">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-location"></div>
+        </article>
+        <article class="tl-card" id="card-materials">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Materials</span>
+            <button class="btn-copy" data-field="materials">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-materials"></div>
+        </article>
+      </div>
+
+      <!-- Row 3: SD (full) -->
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-sd">
+          <div class="tl-card-head">
+            <span class="tl-card-label">SD — Discriminative Stimulus</span>
+            <button class="btn-copy" data-field="sd">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-sd"></div>
+        </article>
+      </div>
+
+      <!-- Row 4: Teaching Instructions + Prompting Hierarchy -->
+      <div class="tl-out-row cols-2">
+        <article class="tl-card" id="card-procedure">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Teaching Instructions</span>
+            <button class="btn-copy" data-field="procedure">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-procedure"></div>
+        </article>
+        <article class="tl-card" id="card-promptingHierarchy">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Prompting Hierarchy</span>
+            <button class="btn-copy" data-field="promptingHierarchy">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-promptingHierarchy"></div>
+        </article>
+      </div>
+
+      <!-- Row 5: Prompting Procedure + Response Recording -->
+      <div class="tl-out-row cols-2">
+        <article class="tl-card" id="card-promptingProcedure">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Prompting Procedure</span>
+            <button class="btn-copy" data-field="promptingProcedure">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-promptingProcedure"></div>
+        </article>
+        <article class="tl-card" id="card-responseRecording">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Response Recording</span>
+            <button class="btn-copy" data-field="responseRecording">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-responseRecording"></div>
+        </article>
+      </div>
+
+      <!-- Save bar -->
+      <div class="tl-save-bar">
+        <div class="tl-save-inner">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--ink-faint);flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span class="tl-save-label">Save to folder</span>
+          <div class="tl-save-field">
+            <input type="text" id="folder-input" list="folder-suggestions" placeholder="Learner initials, e.g. BP" maxlength="6" autocomplete="off" spellcheck="false" />
+            <datalist id="folder-suggestions"></datalist>
+          </div>
+          <button class="btn-save" id="save-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save program
+          </button>
+          <span class="tl-save-ok" id="save-ok" style="display:none;">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Saved to <strong id="save-ok-folder"></strong>
+          </span>
         </div>
-        <div class="tl-col-body" id="col-body-1"></div>
-      </article>
-    </section>
+      </div>
+
+    </div><!-- /output-wrap -->
+
+    <footer class="tl-foot">
+      Draft output — the supervising BCBA reviews and approves every program before it is implemented.
+      Saved programs are stored locally in your browser only.*
+    </footer>
 
   </div>
 </div>
@@ -238,100 +490,336 @@ button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inlin
 <script>
 (function () {
   'use strict';
-  const generateBtn = document.getElementById('generate-btn');
-  const outputSec   = document.getElementById('output-section');
 
-  const GOAL_FIELDS = ['goal-title','goal-location','goal-method','goal-assessment','goal-materials','goal-notes'];
+  // ── Domain → Skill Area map ──────────────────────────────────────────────
+  var SKILL_AREAS = {
+    'Communication & Language': [
+      'Manding (Requesting)',
+      'Tacting (Labeling)',
+      'Intraverbal (Conversational)',
+      'Echoic (Vocal Imitation)',
+      'Functional Communication / AAC',
+      'Mand for Information',
+      'Conversational Skills / Pragmatics',
+    ],
+    'Receptive Language': [
+      'Receptive ID — Objects',
+      'Receptive ID — Actions',
+      'Receptive ID — Features / Adjectives',
+      'Receptive ID — Categories',
+      'Following 1-Step Instructions',
+      'Following Multi-Step Instructions',
+      'Body Part Identification',
+      'Pronoun / Possessive Referents',
+      'Listener Responding — Concepts (spatial, size, quantity, etc.)',
+    ],
+    'Imitation': [
+      'Gross Motor Imitation',
+      'Fine Motor Imitation',
+      'Oral Motor Imitation',
+      'Object Manipulation Imitation',
+      'Vocal Imitation',
+    ],
+    'Matching & Sorting': [
+      'Identical Matching',
+      'Non-Identical Matching',
+      'Matching to Sample',
+      'Sorting by Feature',
+      'Sorting by Category',
+      'Sorting by Function',
+    ],
+    'Play & Leisure': [
+      'Independent Play',
+      'Cooperative / Turn-Taking Play',
+      'Symbolic / Pretend Play',
+      'Peer-Initiated Social Play',
+    ],
+    'Social Skills': [
+      'Joint Attention',
+      'Greetings & Farewells',
+      'Turn Taking',
+      'Peer Interaction',
+      'Conversational Exchange',
+      'Perspective Taking',
+      'Help-Seeking / Break-Requesting',
+    ],
+    'Adaptive & Self-Care': [
+      'Toileting',
+      'Dressing',
+      'Grooming / Hygiene',
+      'Feeding',
+      'Daily Living Routine',
+    ],
+    'Emotional Regulation': [
+      'Coping Skills',
+      'Transition Tolerance',
+      'Waiting / Delay of Reinforcement',
+      'Assent & Choice-Making',
+      'Help-Seeking / Break-Requesting',
+      'Response to Problem Size',
+    ],
+    'Academic & Cognitive Readiness': [
+      'Number / Counting',
+      'Letter / Sound Recognition',
+      'Color Identification',
+      'Shape Identification',
+      'Categorization / Concepts',
+      'Sequencing',
+    ],
+    'Motor Skills': [
+      'Gross Motor (Functional)',
+      'Fine Motor (Functional)',
+      'Visual-Motor Integration',
+      'Oral Motor (Functional)',
+    ],
+  };
 
-  // Restore draft from sessionStorage on load
-  var savedGoals = sessionStorage.getItem('tl-goals-draft');
-  if (savedGoals) {
-    try {
-      var draft = JSON.parse(savedGoals);
-      GOAL_FIELDS.forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el && draft[id] != null) el.value = draft[id];
-      });
-    } catch (e) {}
-  }
+  var FIELDS = ['f-domain','f-skill','f-method','f-location','f-mastery','f-prompt','f-assessment','f-materials','f-notes'];
+  var OUTPUT_KEYS = ['objective','location','materials','sd','procedure','promptingHierarchy','promptingProcedure','responseRecording'];
 
-  // Save draft on any input change
-  function saveGoalsDraft() {
+  var domainSel    = document.getElementById('f-domain');
+  var skillSel     = document.getElementById('f-skill');
+  var generateBtn  = document.getElementById('generate-btn');
+  var errorBox     = document.getElementById('error-box');
+  var errorMsg     = document.getElementById('error-msg');
+  var outputWrap   = document.getElementById('output-wrap');
+  var folderInput  = document.getElementById('folder-input');
+  var saveBtn      = document.getElementById('save-btn');
+  var saveOk       = document.getElementById('save-ok');
+  var saveOkFolder = document.getElementById('save-ok-folder');
+
+  var lastResult = null;
+
+  // ── Draft persistence ────────────────────────────────────────────────────
+  var DRAFT_KEY = 'tl-goals-draft-v2';
+
+  function saveDraft() {
     var draft = {};
-    GOAL_FIELDS.forEach(function (id) {
+    FIELDS.forEach(function (id) {
       var el = document.getElementById(id);
       if (el) draft[id] = el.value;
     });
-    sessionStorage.setItem('tl-goals-draft', JSON.stringify(draft));
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }
-  GOAL_FIELDS.forEach(function (id) {
+
+  (function restoreDraft() {
+    try {
+      var draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
+      if (!draft) return;
+      // Restore domain first so skill area populates
+      if (draft['f-domain']) {
+        domainSel.value = draft['f-domain'];
+        populateSkillArea(draft['f-domain'], draft['f-skill']);
+      }
+      FIELDS.forEach(function (id) {
+        if (id === 'f-domain' || id === 'f-skill') return;
+        var el = document.getElementById(id);
+        if (el && draft[id] != null) el.value = draft[id];
+      });
+      updateGenerateBtn();
+    } catch (e) {}
+  })();
+
+  FIELDS.forEach(function (id) {
     var el = document.getElementById(id);
-    if (el) el.addEventListener('input', saveGoalsDraft);
-    if (el && el.tagName === 'SELECT') el.addEventListener('change', saveGoalsDraft);
+    if (!el) return;
+    el.addEventListener('change', function () { saveDraft(); updateGenerateBtn(); });
+    el.addEventListener('input', function () { saveDraft(); updateGenerateBtn(); });
   });
 
-  generateBtn.addEventListener('click', async function() {
-    const payload = {
-      title: document.getElementById('goal-title').value,
-      location: document.getElementById('goal-location').value,
-      method: document.getElementById('goal-method').value,
-      assessment: document.getElementById('goal-assessment').value,
-      materials: document.getElementById('goal-materials').value,
-      notes: document.getElementById('goal-notes').value
-    };
+  // ── Domain → Skill Area cascade ─────────────────────────────────────────
+  domainSel.addEventListener('change', function () {
+    populateSkillArea(domainSel.value, null);
+    updateGenerateBtn();
+    saveDraft();
+  });
 
-    if(!payload.title) {
-      alert("Please enter a Target Behavior / Goal Title.");
+  function populateSkillArea(domainVal, selectVal) {
+    var skills = SKILL_AREAS[domainVal] || [];
+    skillSel.innerHTML = '';
+    if (!skills.length) {
+      skillSel.disabled = true;
+      var opt = document.createElement('option');
+      opt.value = ''; opt.textContent = '— Select a domain first —';
+      skillSel.appendChild(opt);
       return;
     }
+    skillSel.disabled = false;
+    skills.forEach(function (s) {
+      var opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      skillSel.appendChild(opt);
+    });
+    if (selectVal) skillSel.value = selectVal;
+  }
 
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> Writing goal...';
+  function updateGenerateBtn() {
+    generateBtn.disabled = !domainSel.value || !skillSel.value || skillSel.disabled;
+  }
+
+  // ── Generate ─────────────────────────────────────────────────────────────
+  var LOADING_LINES = [
+    'Generating the objective…',
+    'Writing teaching instructions…',
+    'Building prompting procedure…',
+    'Finalizing response recording…',
+  ];
+  var loadingTimer = null;
+  var loadingIdx = 0;
+
+  generateBtn.addEventListener('click', generate);
+
+  async function generate() {
+    var domain   = domainSel.value;
+    var skillArea = skillSel.value;
+    if (!domain || !skillArea) return;
+
+    setLoading(true);
+    hideError();
+    outputWrap.style.display = 'none';
+    lastResult = null;
+
+    var payload = {
+      domain:          domain,
+      skillArea:       skillArea,
+      methodology:     document.getElementById('f-method').value,
+      location:        document.getElementById('f-location').value,
+      masteryCriteria: document.getElementById('f-mastery').value,
+      promptType:      document.getElementById('f-prompt').value,
+      materials:       document.getElementById('f-materials').value,
+      assessment:      document.getElementById('f-assessment').value,
+      notes:           document.getElementById('f-notes').value,
+    };
 
     try {
-      const res = await fetch('/.netlify/functions/generate-goals', {
+      var res = await fetch('/api/generate-goals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      
-      document.getElementById('col-body-0').textContent = data.goal || '';
-      document.getElementById('col-body-1').textContent = data.objective || '';
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
 
-      outputSec.style.display = 'grid';
-      [0, 1].forEach(function (i) {
-        const col = document.getElementById('col-' + i);
-        col.classList.remove('visible');
-        setTimeout(function () { col.classList.add('visible'); }, i * 100);
+      lastResult = data;
+
+      OUTPUT_KEYS.forEach(function (key) {
+        document.getElementById('out-' + key).textContent = data[key] || '';
       });
+
+      outputWrap.style.display = 'block';
+      saveOk.style.display = 'none';
+      saveBtn.style.display = '';
+      folderInput.value = '';
+      refreshFolderSuggestions();
+
+      // Stagger card animations
+      var cards = document.querySelectorAll('.tl-card');
+      cards.forEach(function (c) { c.classList.remove('visible'); });
+      cards.forEach(function (c, i) {
+        setTimeout(function () { c.classList.add('visible'); }, i * 60);
+      });
+
     } catch (err) {
-      // Temporary mock output for front-end testing if the backend isn't hooked up yet
-      document.getElementById('col-body-0').textContent = `By [Date], given ${payload.materials ? payload.materials : 'naturally occurring materials'} in the ${payload.location.toLowerCase()}, the learner will demonstrate ${payload.title} during ${payload.method} opportunities...`;
-      document.getElementById('col-body-1').textContent = `Objective 1: The learner will... \n\nRationale: This aligns with ${payload.assessment !== 'N/A' ? payload.assessment : 'clinical necessity'} to increase independence...`;
-      
-      outputSec.style.display = 'grid';
-      [0, 1].forEach(function (i) {
-        const col = document.getElementById('col-' + i);
-        col.classList.remove('visible');
-        setTimeout(function () { col.classList.add('visible'); }, i * 100);
-      });
+      showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
     } finally {
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg> Generate Text';
+      setLoading(false);
     }
-  });
+  }
 
+  function setLoading(on) {
+    if (on) {
+      loadingIdx = 0;
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + LOADING_LINES[0];
+      loadingTimer = setInterval(function () {
+        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
+        var icon = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ';
+        generateBtn.innerHTML = icon + LOADING_LINES[loadingIdx];
+      }, 1400);
+    } else {
+      clearInterval(loadingTimer);
+      updateGenerateBtn();
+      if (!generateBtn.disabled) {
+        generateBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg> Build Program';
+      }
+    }
+  }
+
+  function showError(msg) { errorMsg.textContent = msg; errorBox.style.display = 'flex'; }
+  function hideError()    { errorBox.style.display = 'none'; errorMsg.textContent = ''; }
+
+  // ── Copy buttons ─────────────────────────────────────────────────────────
   document.querySelectorAll('.btn-copy').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      const text = document.getElementById('col-body-' + btn.getAttribute('data-col')).textContent;
+      var field = btn.getAttribute('data-field');
+      var text  = document.getElementById('out-' + field).textContent;
+      if (!text) return;
       navigator.clipboard.writeText(text).then(function () {
         btn.classList.add('copied');
-        btn.innerHTML = 'Copied!';
-        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = 'Copy'; }, 1200);
+        btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+        }, 1600);
+      }).catch(function () {
+        btn.textContent = 'Select to copy';
+        setTimeout(function () {
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+        }, 2000);
       });
     });
   });
+
+  // ── Library / Save ───────────────────────────────────────────────────────
+  function getLibrary()    { try { return JSON.parse(localStorage.getItem('tl-library')) || {}; } catch(e) { return {}; } }
+  function saveLibrary(lib){ localStorage.setItem('tl-library', JSON.stringify(lib)); }
+
+  function refreshFolderSuggestions() {
+    var list = document.getElementById('folder-suggestions');
+    list.innerHTML = '';
+    Object.keys(getLibrary()).sort().forEach(function (k) {
+      var opt = document.createElement('option'); opt.value = k; list.appendChild(opt);
+    });
+  }
+
+  refreshFolderSuggestions();
+
+  saveBtn.addEventListener('click', function () {
+    var initials = folderInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!initials) { folderInput.focus(); return; }
+    if (!lastResult) return;
+
+    var lib = getLibrary();
+    if (!lib[initials]) lib[initials] = [];
+    lib[initials].unshift({
+      id:              Date.now(),
+      date:            new Date().toISOString(),
+      type:            'goal',
+      domain:          domainSel.value,
+      skillArea:       skillSel.value,
+      objective:       lastResult.objective,
+      location:        lastResult.location,
+      materials:       lastResult.materials,
+      sd:              lastResult.sd,
+      procedure:       lastResult.procedure,
+      promptingHierarchy:  lastResult.promptingHierarchy,
+      promptingProcedure:  lastResult.promptingProcedure,
+      responseRecording:   lastResult.responseRecording,
+    });
+    saveLibrary(lib);
+    refreshFolderSuggestions();
+
+    saveBtn.style.display = 'none';
+    saveOkFolder.textContent = initials;
+    saveOk.style.display = 'flex';
+    setTimeout(function () {
+      saveBtn.style.display = '';
+      saveOk.style.display = 'none';
+      folderInput.value = '';
+    }, 3000);
+  });
+
 })();
 </script>
 </body>
