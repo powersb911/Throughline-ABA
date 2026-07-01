@@ -20,7 +20,8 @@ MATERIALS
 For DTT goals with physical stimuli: list specific materials and append "data sheet, token board, stoplight visual, help cards" unless otherwise indicated. For NET or vocal goals: write "None or naturally occurring materials, such as [context-appropriate examples]." Write "N/A" only when truly no materials are required.
 
 SD
-For PHYSICAL/RECEPTIVE/MATCHING/SORTING tasks (DTT): the primary antecedent is NON-VERBAL — the act of placing or handing the stimulus to the learner. Lead with this non-verbal SD. Include only 1–2 brief verbal initiating cues (e.g., "Match", "Sort it") for task onset, then note that mass trials may use the non-verbal SD alone after initial verbal instruction. Do NOT generate a list of varied verbal phrases as the primary SD for these task types — that pattern belongs to language goals only.
+For RECEPTIVE IDENTIFICATION tasks (DTT — domain: "Receptive Identification"): the VERBAL instruction IS the primary SD. The array is the context/antecedent; the spoken instruction controls the response. Present the array first, then deliver the verbal SD. Vary the phrasing across trials to promote generalization and prevent rote responding (e.g., "Touch the ___", "Hand me the ___", "Find the ___", "Give me the one that ___", "Where's the ___?"). For feature/function/class SDs, vary the wording so the learner responds to the concept, not a fixed phrase. Always note that array positions must be rotated across trials to prevent position bias.
+For MATCHING/SORTING/IMITATION tasks (DTT): the primary antecedent is NON-VERBAL — the act of placing or handing the stimulus to the learner. Lead with this non-verbal SD. Include only 1–2 brief verbal initiating cues (e.g., "Match", "Sort it") for task onset, then note that mass trials may use the non-verbal SD alone after initial verbal instruction. Do NOT generate a list of varied verbal phrases as the primary SD for these task types.
 For VERBAL/LANGUAGE tasks (manding, tacting, intraverbal, etc.) and NET goals: use "(Vary)" prefix and provide 4–8 varied example SDs that promote generalization and prevent rote responding.
 For naturally occurring antecedents (manding, functional communication): describe the antecedent condition instead of discrete SDs.
 
@@ -154,6 +155,36 @@ const EXAMPLES = [
         '*Do not record data in error correction process.\n\n1. Give a time delay of five seconds before implementing prompting procedure.\n2. Remove incorrect item/icon without using corrective language (i.e., "No, that\'s wrong.")\n3. Re-present array of mats/containers in a different order.\n4. Gain learner\'s attention (i.e., calling name, making silly noise).\n5. Re-deliver SD with least intrusive prompt (i.e., gestural — point to the correct mat/container).\n6. If learner responds correctly, provide neutral behavior specific praise (i.e., "Yes, that belongs there."). Go to step 8.\n7. If learner responds incorrectly with prompt, provide a more intrusive prompt (i.e., gestural → partial physical). Repeat until achieving a correct response.\n8. Finish the sorting activity, ensuring to remove prompt after each piece.\n9. Terminate trial after attempting to prompt three times with most invasive prompt level and no successful responses. Return to program at a later time in session, if possible.\n\n*If learner demonstrates assent withdrawal, stop prompting procedure and wait until they are in HRE (happy, relaxed, engaged) to continue.',
       responseRecording:
         "Independent (+): Learner independently sorts the item to the correct feature category by placing the item/card into the corresponding location within 5 seconds, without any prompting.\n\nPrompted/Incorrect (-): Learner responds incorrectly, does not respond, or engages in target behaviors.",
+    }),
+  },
+  {
+    input: buildInputString({
+      domain: "Receptive Identification",
+      skillArea: "Receptive ID by Feature (e.g., \"Touch the one with wheels\", \"Hand me the furry one\")",
+      methodology: "DTT",
+      location: "Clinic/Table",
+      masteryCriteria: "80% across 3 consecutive sessions",
+      promptType: "Physical (Least-to-Most): Gestural → Partial Physical → Full Physical",
+      materials: "3D objects or picture cards (AO3)",
+      assessment: "ABLLS-R",
+      notes: "Target features: has wheels, is furry, can fly. Array of 3 items. Rotate array positions across trials to prevent position bias. Response topography: learner touches or hands the item to the therapist.",
+    }),
+    output: JSON.stringify({
+      objective:
+        "Given a field of 3 stimuli (AO3), the learner will independently identify items by their feature (e.g., has wheels, is furry, can fly) by touching or handing the correct item when the feature is named for at least 80% of opportunities across 3 consecutive sessions.",
+      location:
+        "The program should be run at a table setting. Limit distractions within the environment (i.e., clear table, no extra materials out). Peers/adults engaged in tasks/activities may be included in the environment (i.e., learner does not have to be the only learner present) to provide a naturalistic setting. Learner should be standing or sitting at the table attending to the task with their body and attention oriented towards the table. Learner should be in HRE (happy, relaxed, engaged) before the SD is presented. If learner prefers to work on the floor, prompt functional communication and honor the request.",
+      materials:
+        "3D objects or picture cards representing target and distractor items (AO3); data sheet, token board, stoplight visual, help cards.",
+      sd: '(Vary phrasing across trials to ensure responding is controlled by the feature concept, not a fixed phrase.)\n• "Touch the one with wheels."\n• "Hand me the furry one."\n• "Find the one that can fly."\n• "Give me the one that has wheels."\n• "Where\'s the one that\'s furry?"\n• "Touch the one that flies."\n\nPresent the array of 3 items before delivering the verbal SD. Rotate the position of each item in the array across every trial to prevent position bias.',
+      procedure:
+        '1. Ensure stimuli is ready. Place the array of 3 items on the table in front of the learner. Rotate item positions across trials.\n2. Establish motivation if motivator is not established already (i.e., choice board, verbally state). Learner\'s schedule of reinforcement will be indicated in the team communication log.\n3. Gain learner\'s attention (i.e., stating name, making a silly noise) and wait for the body to orient towards speaker to demonstrate attending. Do not present SD until attention is attained.\n4. Deliver the verbal SD (e.g., "Touch the one with wheels."). The verbal instruction is the discriminative stimulus — vary phrasing across trials. Do not provide any gestural cues concurrent with the SD.\n5. If learner responds correctly, deliver verbal specific praise (i.e., "Yes! That one has wheels — great listening!"). See team communication log for schedule of reinforcement.\n6. If learner engages in target behavior, follow BIP protocol and terminate trial.\n7. If learner does not respond after five seconds of the delivery of the SD or errors, utilize the prompting procedure below.\n8. Record data.',
+      promptingHierarchy:
+        "Prompting Hierarchy (Least-to-Most):\n\n• Gestural (i.e., point toward the correct item without touching it)\n• Partial physical (i.e., lightly guide hand toward the correct item)\n• Full physical (i.e., gently guide hand to touch or pick up the correct item)\n\n*No prompting in probe.",
+      promptingProcedure:
+        '*Do not record data in error correction process.\n\n1. Give a time delay of five seconds before implementing prompting procedure.\n2. Remove array without using corrective language (i.e., "No, that\'s wrong.")\n3. Re-present array in a different position order.\n4. Gain learner\'s attention (i.e., calling name, making silly noise).\n5. Re-deliver SD with least intrusive prompt (i.e., gestural — point toward the correct item).\n6. If learner responds correctly, provide neutral behavior specific praise (i.e., "Yes, that one has wheels."). Go to step 8.\n7. If learner responds incorrectly with prompt, provide a more intrusive prompt (i.e., gestural → partial physical). Repeat until achieving a correct response.\n8. Run two to three quick maintenance trials (i.e., previously mastered receptive targets).\n9. Re-present trial with prompt removed.\n10. Terminate trial after attempting to prompt three times with most invasive prompt level and no successful responses. Return to program at a later time in session, if possible.\n\n*If learner demonstrates assent withdrawal, stop prompting procedure and wait until they are in HRE (happy, relaxed, engaged) to continue.',
+      responseRecording:
+        "Independent (+): Learner independently touches or hands the correct item (the one matching the stated feature) within 5 seconds of the verbal SD, without any prompting.\n\nPrompted/Incorrect (-): Learner touches or hands an incorrect item, does not respond within 5 seconds, requires any level of prompting, or engages in target behaviors.",
     }),
   },
   {
