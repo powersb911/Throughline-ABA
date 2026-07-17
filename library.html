@@ -353,8 +353,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     family:      ['Purpose of Meeting', 'Meeting Summary', 'BCBA Follow-Up']
   };
 
-  var GOAL_LABELS = ['Objective', 'Location', 'Materials', 'SD — Discriminative Stimulus', 'Teaching Instructions', 'Prompting Hierarchy', 'Prompting Procedure', 'Response Recording'];
-  var GOAL_KEYS   = ['objective', 'location', 'materials', 'sd', 'procedure', 'promptingHierarchy', 'promptingProcedure', 'responseRecording'];
+  var GOAL_LABELS = ['Objective', 'Baseline', 'Data Collection Method', 'Location', 'Teaching Procedures', 'SD — Discriminative Stimulus', 'Materials', 'Prompting Procedure', 'Rationale'];
+  var GOAL_KEYS   = ['objective', 'baseline', 'dataCollectionMethod', 'location', 'teachingProcedures', 'sd', 'materials', 'promptingProcedure', 'rationale'];
 
   function getLibrary() {
     try { return JSON.parse(localStorage.getItem('tl-library')) || {}; } catch(e) { return {}; }
