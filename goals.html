@@ -261,14 +261,14 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
     <!-- Input Panel -->
     <section class="tl-panel">
-      <h2>Program Builder</h2>
-      <p class="tl-panel-desc">Select the skill domain and area, fill in the details, and generate a complete set of training instructions ready to paste into HiRasmus.</p>
+      <h2>Goal Builder</h2>
+      <p class="tl-panel-desc">Fill in the domain, target skill, and baseline — everything else is optional. Type a custom value into any combo field or pick a suggestion, and use the notes box at the bottom to skip structured fields entirely.</p>
 
       <div class="tl-form-grid">
 
         <!-- Domain -->
         <div class="tl-field full">
-          <label class="tl-label" for="f-domain">Skill Domain</label>
+          <label class="tl-label" for="f-domain">Goal Domain *</label>
           <div class="tl-select-wrap">
             <select id="f-domain">
               <option value="">— Select a domain —</option>
@@ -288,22 +288,24 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           </div>
         </div>
 
-        <!-- Skill Area -->
+        <!-- Target Skill -->
         <div class="tl-field full">
-          <label class="tl-label" for="f-skill">Skill Area <span class="tl-label-hint">— updates based on domain</span></label>
-          <div class="tl-select-wrap">
-            <select id="f-skill" disabled>
-              <option value="">— Select a domain first —</option>
-            </select>
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+          <label class="tl-label" for="f-skill">Target Skill * <span class="tl-label-hint">— type freely, or pick a suggestion once a domain is selected</span></label>
+          <input type="text" id="f-skill" list="dl-skill" autocomplete="off" placeholder="e.g., Following two-step verbal directions without prompting" />
+          <datalist id="dl-skill"></datalist>
+        </div>
+
+        <!-- Baseline -->
+        <div class="tl-field full">
+          <label class="tl-label" for="f-baseline">Baseline (Current Performance) *</label>
+          <textarea id="f-baseline" placeholder="e.g., Currently follows single-step directions independently but requires repetition or a gestural prompt for two-step chains."></textarea>
         </div>
 
         <div class="tl-divider"></div>
 
         <!-- Methodology -->
         <div class="tl-field">
-          <label class="tl-label" for="f-method">Methodology</label>
+          <label class="tl-label" for="f-method">Methodology <span class="tl-label-hint">optional</span></label>
           <div class="tl-select-wrap">
             <select id="f-method">
               <option value="DTT">DTT (Discrete Trial Training)</option>
@@ -316,7 +318,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
         <!-- Location -->
         <div class="tl-field">
-          <label class="tl-label" for="f-location">Location / Setting</label>
+          <label class="tl-label" for="f-location">Location / Setting <span class="tl-label-hint">optional</span></label>
           <div class="tl-select-wrap">
             <select id="f-location">
               <option value="Clinic/Table">Clinic — Table Setting</option>
@@ -331,15 +333,31 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
         <!-- Mastery Criteria -->
         <div class="tl-field">
-          <label class="tl-label" for="f-mastery">Mastery Criteria</label>
+          <label class="tl-label" for="f-mastery">Mastery Criteria <span class="tl-label-hint">optional</span></label>
+          <input type="text" id="f-mastery" placeholder="e.g., 80% accuracy across 3 consecutive sessions" />
+        </div>
+
+        <!-- Data Collection Method -->
+        <div class="tl-field">
+          <label class="tl-label" for="f-datacollection">Data Collection Method <span class="tl-label-hint">optional</span></label>
           <div class="tl-select-wrap">
-            <select id="f-mastery">
-              <option value="80% across 3 consecutive sessions">80% across 3 consecutive sessions</option>
-              <option value="80% across 5 consecutive sessions">80% across 5 consecutive sessions</option>
-              <option value="80% across 10 consecutive sessions">80% across 10 consecutive sessions</option>
-              <option value="90% across 3 consecutive sessions">90% across 3 consecutive sessions</option>
-              <option value="90% across 5 consecutive sessions">90% across 5 consecutive sessions</option>
-              <option value="custom">Custom (describe in notes)</option>
+            <select id="f-datacollection">
+              <optgroup label="Continuous Recording">
+                <option value="Trial-by-Trial (Percent Correct)" selected>Trial-by-Trial (Percent Correct)</option>
+                <option value="Frequency / Event Recording">Frequency / Event Recording</option>
+                <option value="Rate (Frequency ÷ Time)">Rate (Frequency ÷ Time)</option>
+                <option value="Duration Recording">Duration Recording</option>
+                <option value="Latency Recording">Latency Recording</option>
+                <option value="Task Analysis (% Steps Independent)">Task Analysis (% Steps Independent)</option>
+              </optgroup>
+              <optgroup label="Discontinuous Recording (Time Sampling)">
+                <option value="Whole Interval Recording">Whole Interval Recording</option>
+                <option value="Partial Interval Recording">Partial Interval Recording</option>
+                <option value="Momentary Time Sampling">Momentary Time Sampling</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="Permanent Product Recording">Permanent Product Recording</option>
+              </optgroup>
             </select>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
@@ -347,20 +365,37 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
         <!-- Prompt Hierarchy -->
         <div class="tl-field">
-          <label class="tl-label" for="f-prompt">Prompt Hierarchy Type</label>
+          <label class="tl-label" for="f-prompt">Prompt Hierarchy Type <span class="tl-label-hint">optional</span></label>
           <div class="tl-select-wrap">
             <select id="f-prompt">
               <option value="Physical (Least-to-Most): Gestural → Partial Physical → Full Physical">Physical L-to-M — Gestural → Partial → Full Physical</option>
               <option value="Verbal (Least-to-Most): Gestural → Partial Verbal → Full Verbal">Verbal L-to-M — Gestural → Partial → Full Verbal</option>
               <option value="Mixed (Least-to-Most): Gestural → Indirect Verbal → Partial Verbal → Full Verbal">Mixed L-to-M — Gestural → Indirect → Partial → Full Verbal</option>
               <option value="Gestural + Model (Least-to-Most): Gestural → Model → Full">Gestural + Model — Gestural → Model → Full</option>
-              <option value="Custom (describe in notes)">Custom (describe in notes)</option>
+              <option value="Model-Based (Least-to-Most): Model → Partial Physical → Full Physical">Model-Based — Model → Partial Physical → Full Physical</option>
             </select>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
 
-        <div class="tl-divider"></div>
+        <!-- Current Prompt Level -->
+        <div class="tl-field">
+          <label class="tl-label" for="f-promptlevel">Current Prompt Level <span class="tl-label-hint">optional — how the learner performs today</span></label>
+          <div class="tl-select-wrap">
+            <select id="f-promptlevel">
+              <option value="">— Not specified —</option>
+              <option value="Independent">Independent</option>
+              <option value="Gestural">Gestural</option>
+              <option value="Model">Model</option>
+              <option value="Indirect Verbal">Indirect Verbal</option>
+              <option value="Partial Verbal">Partial Verbal</option>
+              <option value="Full Verbal">Full Verbal</option>
+              <option value="Partial Physical">Partial Physical</option>
+              <option value="Full Physical">Full Physical</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
 
         <!-- Assessment -->
         <div class="tl-field">
@@ -385,7 +420,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
         <!-- Notes -->
         <div class="tl-field full">
-          <label class="tl-label" for="f-notes">Description / Notes <span class="tl-label-hint">— specific targets, exemplars, mastery criteria details, special considerations</span></label>
+          <label class="tl-label" for="f-notes">Additional Notes <span class="tl-label-hint">— catch-all free text. Skip any field above and just describe the goal here; notes override structured fields when they conflict.</span></label>
           <textarea id="f-notes" placeholder="e.g., Target: receptive ID of colors across an array of 6 items. Colors: red, blue, green, yellow, orange, purple. Learner currently points to identify. Include 3D objects and 2D picture cards."></textarea>
         </div>
 
@@ -416,7 +451,19 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     <!-- Output -->
     <div id="output-wrap" class="tl-output-wrap" style="display:none;">
 
-      <!-- Row 1: Objective (full) -->
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-domain">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Domain</span>
+            <button class="btn-copy" data-field="domain">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-domain"></div>
+        </article>
+      </div>
+
       <div class="tl-out-row cols-1">
         <article class="tl-card" id="card-objective">
           <div class="tl-card-head">
@@ -430,8 +477,33 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         </article>
       </div>
 
-      <!-- Row 2: Location + Materials -->
-      <div class="tl-out-row cols-2">
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-baseline">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Baseline</span>
+            <button class="btn-copy" data-field="baseline">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-baseline"></div>
+        </article>
+      </div>
+
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-dataCollectionMethod">
+          <div class="tl-card-head">
+            <span class="tl-card-label">Data Collection Method</span>
+            <button class="btn-copy" data-field="dataCollectionMethod">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="tl-card-body" id="out-dataCollectionMethod"></div>
+        </article>
+      </div>
+
+      <div class="tl-out-row cols-1">
         <article class="tl-card" id="card-location">
           <div class="tl-card-head">
             <span class="tl-card-label">Location</span>
@@ -442,19 +514,21 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           </div>
           <div class="tl-card-body" id="out-location"></div>
         </article>
-        <article class="tl-card" id="card-materials">
+      </div>
+
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-teachingProcedures">
           <div class="tl-card-head">
-            <span class="tl-card-label">Materials</span>
-            <button class="btn-copy" data-field="materials">
+            <span class="tl-card-label">Teaching Procedures</span>
+            <button class="btn-copy" data-field="teachingProcedures">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy
             </button>
           </div>
-          <div class="tl-card-body" id="out-materials"></div>
+          <div class="tl-card-body" id="out-teachingProcedures"></div>
         </article>
       </div>
 
-      <!-- Row 3: SD (full) -->
       <div class="tl-out-row cols-1">
         <article class="tl-card" id="card-sd">
           <div class="tl-card-head">
@@ -468,32 +542,20 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
         </article>
       </div>
 
-      <!-- Row 4: Teaching Instructions + Prompting Hierarchy -->
-      <div class="tl-out-row cols-2">
-        <article class="tl-card" id="card-procedure">
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-materials">
           <div class="tl-card-head">
-            <span class="tl-card-label">Teaching Instructions</span>
-            <button class="btn-copy" data-field="procedure">
+            <span class="tl-card-label">Materials</span>
+            <button class="btn-copy" data-field="materials">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy
             </button>
           </div>
-          <div class="tl-card-body" id="out-procedure"></div>
-        </article>
-        <article class="tl-card" id="card-promptingHierarchy">
-          <div class="tl-card-head">
-            <span class="tl-card-label">Prompting Hierarchy</span>
-            <button class="btn-copy" data-field="promptingHierarchy">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Copy
-            </button>
-          </div>
-          <div class="tl-card-body" id="out-promptingHierarchy"></div>
+          <div class="tl-card-body" id="out-materials"></div>
         </article>
       </div>
 
-      <!-- Row 5: Prompting Procedure + Response Recording -->
-      <div class="tl-out-row cols-2">
+      <div class="tl-out-row cols-1">
         <article class="tl-card" id="card-promptingProcedure">
           <div class="tl-card-head">
             <span class="tl-card-label">Prompting Procedure</span>
@@ -504,15 +566,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
           </div>
           <div class="tl-card-body" id="out-promptingProcedure"></div>
         </article>
-        <article class="tl-card" id="card-responseRecording">
+      </div>
+
+      <div class="tl-out-row cols-1">
+        <article class="tl-card" id="card-rationale">
           <div class="tl-card-head">
-            <span class="tl-card-label">Response Recording</span>
-            <button class="btn-copy" data-field="responseRecording">
+            <span class="tl-card-label">Rationale</span>
+            <button class="btn-copy" data-field="rationale">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy
             </button>
           </div>
-          <div class="tl-card-body" id="out-responseRecording"></div>
+          <div class="tl-card-body" id="out-rationale"></div>
         </article>
       </div>
 
@@ -644,11 +709,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     ],
   };
 
-  var FIELDS = ['f-domain','f-skill','f-method','f-location','f-mastery','f-prompt','f-assessment','f-materials','f-notes'];
-  var OUTPUT_KEYS = ['objective','location','materials','sd','procedure','promptingHierarchy','promptingProcedure','responseRecording'];
+  var FIELDS = ['f-domain','f-skill','f-baseline','f-method','f-location','f-mastery','f-datacollection','f-prompt','f-promptlevel','f-assessment','f-materials','f-notes'];
+  var REQUIRED_FIELDS = ['f-domain','f-skill','f-baseline'];
+  var OUTPUT_KEYS = ['domain','objective','baseline','dataCollectionMethod','location','teachingProcedures','sd','materials','promptingProcedure','rationale'];
 
   var domainSel    = document.getElementById('f-domain');
   var skillSel     = document.getElementById('f-skill');
+  var skillDatalist = document.getElementById('dl-skill');
   var generateBtn  = document.getElementById('generate-btn');
   var clearBtn     = document.getElementById('clear-btn');
   var errorBox     = document.getElementById('error-box');
@@ -678,10 +745,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       if (!draft) return;
       if (draft['f-domain']) {
         domainSel.value = draft['f-domain'];
-        populateSkillArea(draft['f-domain'], draft['f-skill']);
+        populateSkillDatalist(draft['f-domain']);
       }
       FIELDS.forEach(function (id) {
-        if (id === 'f-domain' || id === 'f-skill') return;
+        if (id === 'f-domain') return;
         var el = document.getElementById(id);
         if (el && draft[id] != null) el.value = draft[id];
       });
@@ -722,8 +789,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       if (!el) return;
       el.tagName === 'SELECT' ? (el.selectedIndex = 0) : (el.value = '');
     });
-    domainSel.value = '';
-    populateSkillArea('', null);
+    populateSkillDatalist('');
     updateGenerateBtn();
     outputWrap.style.display = 'none';
     lastResult = null;
@@ -733,44 +799,37 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     clearBtn.style.display = 'none';
   });
 
-  // ── Domain → Skill Area cascade ─────────────────────────────────────────
+  // ── Domain → Skill Area suggestions ──────────────────────────────────────
   domainSel.addEventListener('change', function () {
-    populateSkillArea(domainSel.value, null);
+    populateSkillDatalist(domainSel.value);
     updateGenerateBtn();
     saveDraft();
     clearBtn.style.display = 'inline-flex';
   });
 
-  function populateSkillArea(domainVal, selectVal) {
+  function populateSkillDatalist(domainVal) {
     var skills = SKILL_AREAS[domainVal] || [];
-    skillSel.innerHTML = '';
-    if (!skills.length) {
-      skillSel.disabled = true;
-      var opt = document.createElement('option');
-      opt.value = ''; opt.textContent = '— Select a domain first —';
-      skillSel.appendChild(opt);
-      return;
-    }
-    skillSel.disabled = false;
+    skillDatalist.innerHTML = '';
     skills.forEach(function (s) {
       var opt = document.createElement('option');
       opt.value = s;
-      opt.textContent = s;
-      skillSel.appendChild(opt);
+      skillDatalist.appendChild(opt);
     });
-    if (selectVal) skillSel.value = selectVal;
   }
 
   function updateGenerateBtn() {
-    generateBtn.disabled = !domainSel.value || !skillSel.value || skillSel.disabled;
+    generateBtn.disabled = REQUIRED_FIELDS.some(function (id) {
+      var el = document.getElementById(id);
+      return !el || !el.value.trim();
+    });
   }
 
   // ── Generate ─────────────────────────────────────────────────────────────
   var LOADING_LINES = [
     'Generating the objective…',
-    'Writing teaching instructions…',
+    'Documenting baseline…',
+    'Writing teaching procedures…',
     'Building prompting procedure…',
-    'Finalizing response recording…',
   ];
   var loadingTimer = null;
   var loadingIdx = 0;
@@ -779,15 +838,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
   async function generate() {
     var domain   = domainSel.value;
-    var skillArea = skillSel.value;
-    if (!domain || !skillArea) return;
+    var skillArea = skillSel.value.trim();
+    var baseline = document.getElementById('f-baseline').value.trim();
+    if (!domain || !skillArea || !baseline) return;
 
     setLoading(true);
     hideError();
     outputWrap.style.display = 'none';
     lastResult = null;
 
-    var freeTextFields = ['f-location', 'f-mastery', 'f-prompt', 'f-materials', 'f-assessment', 'f-notes'];
     var phiTypes = [];
     function scrubField(id) {
       var val = document.getElementById(id).value;
@@ -797,15 +856,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     }
 
     var payload = {
-      domain:          domain,
-      skillArea:       skillArea,
-      methodology:     document.getElementById('f-method').value,
-      location:        scrubField('f-location'),
-      masteryCriteria: scrubField('f-mastery'),
-      promptType:      scrubField('f-prompt'),
-      materials:       scrubField('f-materials'),
-      assessment:      scrubField('f-assessment'),
-      notes:           scrubField('f-notes'),
+      domain:              domain,
+      skillArea:           scrubField('f-skill'),
+      methodology:         document.getElementById('f-method').value,
+      baseline:            scrubField('f-baseline'),
+      location:            document.getElementById('f-location').value,
+      masteryCriteria:     scrubField('f-mastery'),
+      promptType:          document.getElementById('f-prompt').value,
+      currentPromptLevel:  document.getElementById('f-promptlevel').value,
+      dataCollectionMethod: document.getElementById('f-datacollection').value,
+      materials:           scrubField('f-materials'),
+      assessment:          document.getElementById('f-assessment').value,
+      notes:               scrubField('f-notes'),
     };
     showPhiNotice(phiTypes);
 
@@ -1026,13 +1088,14 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
       domain:          domainSel.value,
       skillArea:       skillSel.value,
       objective:       lastResult.objective,
+      baseline:        lastResult.baseline,
+      dataCollectionMethod: lastResult.dataCollectionMethod,
       location:        lastResult.location,
-      materials:       lastResult.materials,
+      teachingProcedures:  lastResult.teachingProcedures,
       sd:              lastResult.sd,
-      procedure:       lastResult.procedure,
-      promptingHierarchy:  lastResult.promptingHierarchy,
+      materials:       lastResult.materials,
       promptingProcedure:  lastResult.promptingProcedure,
-      responseRecording:   lastResult.responseRecording,
+      rationale:       lastResult.rationale,
     });
     saveLibrary(lib);
     refreshFolderSelect();
