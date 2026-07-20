@@ -180,18 +180,24 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   box-shadow: 28px 28px 60px rgba(27,33,36,0.06); position: sticky; top: 20px;
 }
 .metrics-panel h3 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 18px; margin: 0 0 14px; }
+.data-quality-note {
+  display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--gold-deep);
+  background: var(--gold-tint); border: 1px solid #e8d48a; border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; line-height: 1.5;
+}
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
 .stat-tile {
-  background: #fffdf9; border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px;
+  background: #fffdf9; border: 1px solid var(--line); border-radius: 12px; padding: 12px 6px;
   text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
 }
 .stat-tile:hover { border-color: var(--indigo); }
 .stat-tile.open { background: var(--indigo-tint); border-color: #d9d2ea; }
-.stat-num { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; line-height: 1; }
+.stat-num { font-family: 'Newsreader', serif; font-size: 24px; font-weight: 600; line-height: 1; }
 .stat-num.mastered { color: var(--teal-deep); }
-.stat-num.active { color: var(--indigo-deep); }
-.stat-num.plateaued { color: var(--rust-deep); }
-.stat-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 4px; }
+.stat-num.inProgress { color: var(--indigo-deep); }
+.stat-num.onHold { color: var(--rust-deep); }
+.stat-num.new { color: var(--gold-deep); }
+.stat-num.discontinued { color: var(--ink-faint); }
+.stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); margin-top: 4px; }
 .stat-list { display: none; margin-bottom: 14px; }
 .stat-list.visible { display: block; }
 .stat-list-item { padding: 8px 10px; border-radius: 8px; background: #fffdf9; border: 1px solid var(--line); font-size: 12.5px; margin-bottom: 6px; }
@@ -228,6 +234,15 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .tl-card-body-wrap { padding: 0 18px 18px; }
 .tl-card.collapsed .tl-card-body-wrap { display: none; }
 .tl-card-body { font-size: 14px; line-height: 1.72; color: #272c2e; white-space: pre-wrap; }
+.tl-card-body ins { background: var(--teal-tint); color: var(--teal-deep); text-decoration: none; border-radius: 3px; padding: 0 1px; }
+.tl-card-body del { background: var(--rust-tint); color: var(--rust-deep); text-decoration: line-through; border-radius: 3px; padding: 0 1px; }
+.tl-card-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap; margin-right: 4px;
+}
+.tl-card-badge.edited { background: var(--teal-tint); color: var(--teal-deep); }
+.tl-card-badge.unchanged { background: #ece9e2; color: var(--ink-faint); }
+.tl-card-badge.fresh { background: var(--gold-tint); color: var(--gold-deep); }
 
 .btn-copy {
   display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
@@ -315,7 +330,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
       <div class="reauth-grid">
 
         <div class="reauth-field">
-          <label class="tl-label">Previous Authorization / Treatment Plan <span class="tl-label-hint">PDF, optional</span></label>
+          <label class="tl-label">Previous Authorization / Treatment Plan <span class="tl-label-hint">PDF — upload this to edit your existing document in place; skip it to draft fresh from a standard template</span></label>
           <div class="tl-dropzone" id="dz-old" tabindex="0">
             <input type="file" id="file-old" accept="application/pdf" hidden />
             <div class="dz-empty" id="dz-old-empty">
@@ -424,25 +439,36 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
         <!-- Left: Extracted Data Summary -->
         <aside class="metrics-panel">
           <h3>Extracted Data Summary</h3>
+          <div class="data-quality-note" id="data-quality-note" style="display:none;"></div>
 
           <div class="stat-row">
             <div class="stat-tile" id="stat-mastered" data-list="list-mastered">
               <div class="stat-num mastered" id="num-mastered">0</div>
               <div class="stat-label">Mastered</div>
             </div>
-            <div class="stat-tile" id="stat-active" data-list="list-active">
-              <div class="stat-num active" id="num-active">0</div>
-              <div class="stat-label">Active</div>
+            <div class="stat-tile" id="stat-inProgress" data-list="list-inProgress">
+              <div class="stat-num inProgress" id="num-inProgress">0</div>
+              <div class="stat-label">In Progress</div>
             </div>
-            <div class="stat-tile" id="stat-plateaued" data-list="list-plateaued">
-              <div class="stat-num plateaued" id="num-plateaued">0</div>
-              <div class="stat-label">Plateaued</div>
+            <div class="stat-tile" id="stat-onHold" data-list="list-onHold">
+              <div class="stat-num onHold" id="num-onHold">0</div>
+              <div class="stat-label">On Hold</div>
+            </div>
+            <div class="stat-tile" id="stat-new" data-list="list-new">
+              <div class="stat-num new" id="num-new">0</div>
+              <div class="stat-label">New</div>
+            </div>
+            <div class="stat-tile" id="stat-discontinued" data-list="list-discontinued">
+              <div class="stat-num discontinued" id="num-discontinued">0</div>
+              <div class="stat-label">Discontinued</div>
             </div>
           </div>
 
           <div class="stat-list" id="list-mastered"></div>
-          <div class="stat-list" id="list-active"></div>
-          <div class="stat-list" id="list-plateaued"></div>
+          <div class="stat-list" id="list-inProgress"></div>
+          <div class="stat-list" id="list-onHold"></div>
+          <div class="stat-list" id="list-new"></div>
+          <div class="stat-list" id="list-discontinued"></div>
 
           <h3 style="margin-top: 4px;">Behavior Trends</h3>
           <div class="trend-table" id="trend-table"></div>
@@ -480,17 +506,60 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 (function () {
   'use strict';
 
-  var SECTION_DEFS = [
-    { key: 'behaviorReduction',   label: 'Behavior Reduction Trends & Progress' },
-    { key: 'skillAcquisition',    label: 'Skill Acquisition Summary (Mastered vs. Active)' },
-    { key: 'barriers',            label: 'Barriers to Progress & Clinical Rationales' },
-    { key: 'caregiverInvolvement',label: 'Caregiver Involvement & Fidelity Metrics' },
-    { key: 'coordinationOfCare',  label: 'Coordination of Care (Multi-disciplinary)' },
-    { key: 'transitionFading',    label: 'Transition, Fading, & Discharge Plan' },
-    { key: 'medicalNecessity',    label: 'Final Medical Necessity Justification Statement' },
-  ];
-
   var GOAL_OUTPUT_KEYS = ['objective', 'baseline', 'dataCollectionMethod', 'location', 'teachingProcedures', 'sd', 'materials', 'promptingProcedure', 'rationale'];
+  var STAT_KEYS = ['mastered', 'inProgress', 'onHold', 'new', 'discontinued'];
+  var DELTA_KEY_MAP = { mastered: 'goalsMastered', inProgress: 'goalsInProgress', onHold: 'goalsOnHold', discontinued: 'goalsDiscontinued', new: 'goalsNew' };
+
+  // ── Word-level diff (for edit-in-place highlighting) ─────────────────────
+  function tokenize(text) { return (text || '').match(/\S+|\s+/g) || []; }
+
+  function wordDiff(oldText, newText) {
+    var a = tokenize(oldText), b = tokenize(newText);
+    var n = a.length, m = b.length;
+    var dp = new Array(n + 1);
+    for (var i = 0; i <= n; i++) dp[i] = new Uint32Array(m + 1);
+    for (i = n - 1; i >= 0; i--) {
+      for (var j = m - 1; j >= 0; j--) {
+        dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+    var ops = [];
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (a[i] === b[j]) { ops.push({ type: 'same', text: a[i] }); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) { ops.push({ type: 'del', text: a[i] }); i++; }
+      else { ops.push({ type: 'ins', text: b[j] }); j++; }
+    }
+    while (i < n) { ops.push({ type: 'del', text: a[i] }); i++; }
+    while (j < m) { ops.push({ type: 'ins', text: b[j] }); j++; }
+    return ops;
+  }
+
+  function escapeHtmlText(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderDiffHtml(oldText, newText) {
+    if (oldText == null) return escapeHtmlText(newText);
+    if (oldText === newText) return escapeHtmlText(newText);
+    var ops = wordDiff(oldText, newText);
+    var html = '', run = '', runType = null;
+    function flush() {
+      if (!run) return;
+      if (runType === 'ins') html += '<ins>' + escapeHtmlText(run) + '</ins>';
+      else if (runType === 'del') html += '<del>' + escapeHtmlText(run) + '</del>';
+      else html += escapeHtmlText(run);
+      run = '';
+    }
+    ops.forEach(function (op) {
+      if (op.type !== runType) { flush(); runType = op.type; }
+      run += op.text;
+    });
+    flush();
+    return html;
+  }
 
   // ── PDF.js setup ──────────────────────────────────────────────────────────
   if (window.pdfjsLib) {
@@ -736,20 +805,23 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   function showError(msg) { errorMsg.textContent = msg; errorBox.style.display = 'flex'; }
   function hideError() { errorBox.style.display = 'none'; }
 
-  // ── Generate ─────────────────────────────────────────────────────────────
-  var LOADING_LINES = ['Comparing documents…', 'Categorizing goals…', 'Drafting sections…', 'Applying payer guidance…'];
+  // ── Generate (two-stage: analyze, then draft) ────────────────────────────
+  var LOADING_LINES_STAGE1 = ['Reading documents…', 'Comparing old vs. new…', 'Categorizing goals…'];
+  var LOADING_LINES_STAGE2 = ['Drafting updated sections…', 'Applying payer guidance…', 'Preserving original wording…'];
   var loadingTimer = null, loadingIdx = 0;
-  var lastResult = null;
+  var lastAnalysis = null;
+  var lastDraft = null;
+  var lastSectionText = {};
+  var lastSectionHtml = {};
 
   generateBtn.addEventListener('click', generate);
 
   async function generate() {
-    setLoading(true);
+    setLoading(true, LOADING_LINES_STAGE1);
     hideError();
     document.getElementById('dashboard').style.display = 'none';
 
-    var payload = {
-      payer: document.getElementById('f-payer').value,
+    var analyzePayload = {
       oldDocText: document.getElementById('dz-old-text').value,
       newDocText: document.getElementById('dz-new-text').value,
       libraryContext: libraryContextText,
@@ -757,15 +829,35 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     };
 
     try {
-      var res = await fetch('/api/generate-reauth', {
+      var res1 = await fetch('/api/generate-reauth-analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(analyzePayload),
       });
-      var data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
-      lastResult = data;
-      renderDashboard(data);
+      var analysis = await res1.json();
+      if (!res1.ok) throw new Error(analysis.error || 'Something went wrong analyzing the documents.');
+      lastAnalysis = analysis;
+
+      setLoading(true, LOADING_LINES_STAGE2);
+
+      var draftPayload = {
+        payer: document.getElementById('f-payer').value,
+        sourceType: analysis.sourceType,
+        templateSections: analysis.templateSections,
+        delta: analysis.delta,
+        brainDump: brainDumpEl.value,
+      };
+
+      var res2 = await fetch('/api/generate-reauth-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftPayload),
+      });
+      var draft = await res2.json();
+      if (!res2.ok) throw new Error(draft.error || 'Something went wrong drafting the document.');
+      lastDraft = draft;
+
+      renderDashboard(analysis, draft);
     } catch (err) {
       showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
     } finally {
@@ -773,14 +865,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     }
   }
 
-  function setLoading(on) {
+  function setLoading(on, lines) {
     if (on) {
+      lines = lines || LOADING_LINES_STAGE1;
       loadingIdx = 0;
       generateBtn.disabled = true;
-      generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + LOADING_LINES[0];
+      clearInterval(loadingTimer);
+      generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + lines[0];
       loadingTimer = setInterval(function () {
-        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
-        generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + LOADING_LINES[loadingIdx];
+        loadingIdx = (loadingIdx + 1) % lines.length;
+        generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + lines[loadingIdx];
       }, 1400);
     } else {
       clearInterval(loadingTimer);
@@ -795,23 +889,30 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   var PENCIL_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
   var COPY_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 
-  function renderDashboard(data) {
-    var m = data.metrics;
+  function renderDashboard(analysis, draft) {
+    var delta = analysis.delta || {};
 
-    document.getElementById('num-mastered').textContent = m.goalsMastered.length;
-    document.getElementById('num-active').textContent = m.goalsActive.length;
-    document.getElementById('num-plateaued').textContent = m.goalsPlateaued.length;
+    var qualityNote = document.getElementById('data-quality-note');
+    if (analysis.dataQualityNotes) {
+      qualityNote.textContent = analysis.dataQualityNotes;
+      qualityNote.style.display = 'block';
+    } else {
+      qualityNote.style.display = 'none';
+    }
 
-    renderStatList('list-mastered', m.goalsMastered);
-    renderStatList('list-active', m.goalsActive);
-    renderStatList('list-plateaued', m.goalsPlateaued);
+    STAT_KEYS.forEach(function (key) {
+      var items = delta[DELTA_KEY_MAP[key]] || [];
+      document.getElementById('num-' + key).textContent = items.length;
+      renderStatList('list-' + key, items);
+    });
 
     var trendTable = document.getElementById('trend-table');
     trendTable.innerHTML = '';
-    if (!m.behaviorTrends.length) {
+    var trends = delta.behaviorTrends || [];
+    if (!trends.length) {
       trendTable.innerHTML = '<div class="metrics-empty">No behavior trend data found in the source material.</div>';
     } else {
-      m.behaviorTrends.forEach(function (t) {
+      trends.forEach(function (t) {
         var row = document.createElement('div');
         row.className = 'trend-row';
         row.innerHTML =
@@ -822,24 +923,44 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
       });
     }
 
+    var originalById = {};
+    (analysis.templateSections || []).forEach(function (s) { originalById[s.id] = s.originalText; });
+    lastSectionText = {};
+    lastSectionHtml = {};
+
     var col = document.getElementById('sections-col');
     col.innerHTML = '';
-    SECTION_DEFS.forEach(function (def) {
+    var sections = draft.sections || [];
+    if (!sections.length) {
+      col.innerHTML = '<div class="metrics-empty">No sections were returned. Check the error box above, or try again.</div>';
+    }
+    sections.forEach(function (sec) {
+      var hasOriginal = Object.prototype.hasOwnProperty.call(originalById, sec.id);
+      var original = hasOriginal ? originalById[sec.id] : null;
+      var badge = !hasOriginal
+        ? '<span class="tl-card-badge fresh">Newly drafted</span>'
+        : (original === sec.updatedText
+            ? '<span class="tl-card-badge unchanged">Unchanged</span>'
+            : '<span class="tl-card-badge edited">Edited</span>');
       var card = document.createElement('article');
       card.className = 'tl-card';
-      card.id = 'card-' + def.key;
+      card.id = 'card-' + sec.id;
       card.innerHTML =
         '<div class="tl-card-head">' +
-          '<span class="tl-card-label">' + def.label + '</span>' +
+          '<span class="tl-card-label">' + escapeHtml(sec.heading) + '</span>' +
           '<div class="tl-card-head-right">' +
-            '<button class="btn-copy" data-field="' + def.key + '" type="button">' + COPY_SVG + ' Copy</button>' +
-            '<button class="btn-edit" data-field="' + def.key + '" type="button">' + PENCIL_SVG + ' Edit</button>' +
+            badge +
+            '<button class="btn-copy" data-field="' + sec.id + '" type="button">' + COPY_SVG + ' Copy</button>' +
+            '<button class="btn-edit" data-field="' + sec.id + '" type="button">' + PENCIL_SVG + ' Edit</button>' +
             '<svg class="chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
           '</div>' +
         '</div>' +
-        '<div class="tl-card-body-wrap"><div class="tl-card-body" id="out-' + def.key + '"></div></div>';
+        '<div class="tl-card-body-wrap"><div class="tl-card-body" id="out-' + sec.id + '" data-heading="' + escapeHtml(sec.heading) + '"></div></div>';
       col.appendChild(card);
-      document.getElementById('out-' + def.key).textContent = data.sections[def.key] || '';
+      var html = renderDiffHtml(original, sec.updatedText || '');
+      document.getElementById('out-' + sec.id).innerHTML = html;
+      lastSectionText[sec.id] = sec.updatedText || '';
+      lastSectionHtml[sec.id] = html;
     });
 
     wireCardInteractions();
@@ -892,7 +1013,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     document.querySelectorAll('.btn-copy').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var field = btn.getAttribute('data-field');
-        var text = document.getElementById('out-' + field).textContent;
+        var text = lastSectionText[field] || '';
         if (!text) return;
         navigator.clipboard.writeText(text).then(function () {
           btn.classList.add('copied');
@@ -908,12 +1029,14 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
         var body = document.getElementById('out-' + field);
         var head = btn.closest('.tl-card-head-right');
         var copyBtn = head.querySelector('.btn-copy');
-        var originalText = body.textContent;
+        var badge = head.querySelector('.tl-card-badge');
+        var originalText = lastSectionText[field] || '';
+        var originalHtml = lastSectionHtml[field] || escapeHtmlText(originalText);
 
         var ta = document.createElement('textarea');
         ta.className = 'card-edit-area';
         ta.value = originalText;
-        body.textContent = '';
+        body.innerHTML = '';
         body.appendChild(ta);
         ta.focus();
 
@@ -927,25 +1050,34 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
         head.insertBefore(cancelBtn, head.lastElementChild);
         head.insertBefore(saveBtn, cancelBtn);
 
-        function exitEdit(text) {
-          body.textContent = text;
+        function exitEdit(text, html) {
+          body.innerHTML = html;
+          lastSectionText[field] = text;
+          lastSectionHtml[field] = html;
+          if (lastDraft) {
+            var sec = (lastDraft.sections || []).filter(function (s) { return s.id === field; })[0];
+            if (sec) sec.updatedText = text;
+          }
           copyBtn.style.display = '';
           btn.style.display = '';
           saveBtn.remove();
           cancelBtn.remove();
-          if (lastResult) lastResult.sections[field] = text;
         }
-        saveBtn.addEventListener('click', function () { exitEdit(ta.value); });
-        cancelBtn.addEventListener('click', function () { exitEdit(originalText); });
+        saveBtn.addEventListener('click', function () {
+          var edited = ta.value !== originalText;
+          if (edited && badge) { badge.className = 'tl-card-badge edited'; badge.textContent = 'Edited (by you)'; }
+          exitEdit(ta.value, escapeHtmlText(ta.value));
+        });
+        cancelBtn.addEventListener('click', function () { exitEdit(originalText, originalHtml); });
       });
     });
   }
 
   // ── Footer actions ───────────────────────────────────────────────────────
   document.getElementById('copy-all-btn').addEventListener('click', function () {
-    if (!lastResult) return;
-    var text = SECTION_DEFS.map(function (def) {
-      return def.label.toUpperCase() + '\n' + (lastResult.sections[def.key] || '') + '\n';
+    if (!lastDraft || !lastDraft.sections || !lastDraft.sections.length) return;
+    var text = lastDraft.sections.map(function (sec) {
+      return sec.heading.toUpperCase() + '\n' + (lastSectionText[sec.id] || '') + '\n';
     }).join('\n');
     navigator.clipboard.writeText(text).then(function () {
       var btn = document.getElementById('copy-all-btn');
@@ -956,10 +1088,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   });
 
   document.getElementById('export-btn').addEventListener('click', function () {
-    if (!lastResult) return;
-    var bodyHtml = SECTION_DEFS.map(function (def) {
-      var content = (lastResult.sections[def.key] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>');
-      return '<h2 style="font-family:Calibri,sans-serif;font-size:14pt;color:#362d54;">' + def.label + '</h2>' +
+    if (!lastDraft || !lastDraft.sections || !lastDraft.sections.length) return;
+    var bodyHtml = lastDraft.sections.map(function (sec) {
+      var content = (lastSectionText[sec.id] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+      return '<h2 style="font-family:Calibri,sans-serif;font-size:14pt;color:#362d54;">' + escapeHtmlText(sec.heading) + '</h2>' +
         '<p style="font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5;">' + content + '</p>';
     }).join('');
     var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +

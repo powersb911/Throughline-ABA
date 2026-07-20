@@ -38,10 +38,19 @@ throughline/
     ├── generate.js         <- supervision-note "waiter" (holds your key)
     ├── generate-family.js  <- family-note "waiter"
     ├── generate-goals.js   <- program-builder "waiter"
-    ├── generate-reauth.js  <- reauthorization "waiter"
+    ├── generate-reauth-analyze.js  <- reauthorization Stage 1: reads & structures the documents (Sonnet)
+    ├── generate-reauth-draft.js    <- reauthorization Stage 2: drafts the updated document (Opus)
     └── lib/
         └── payer-rules.js  <- per-payer drafting bias (Optum, Tricare, etc.)
 ```
+
+**Reauthorization Assistant pipeline:** this feature runs two AI calls instead of one. Stage 1
+(Sonnet) reads the uploaded documents, classifies whether the old one is a real previous
+reauthorization to edit or just an intake assessment, extracts its section structure, and does
+the mastered/in-progress/on-hold/discontinued/new goal comparison. Stage 2 (Opus — deliberately
+the stronger, pricier model here since it's the accuracy-critical writing step) takes that
+structured analysis and edits each section in place with minimal changes, which the page then
+diffs against the original text client-side to highlight exactly what changed.
 
 Keep this folder structure as-is. The `api/` folder is special — Vercel
 automatically turns each file in it into a serverless function at `/api/<name>`.
