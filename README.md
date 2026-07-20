@@ -29,6 +29,7 @@ throughline/
 ├── index.html              <- Supervision notes page
 ├── family.html             <- Family engagement notes page
 ├── goals.html              <- Goal / program builder page
+├── reauthorization.html    <- Reauthorization Assistant (payer summary drafting)
 ├── library.html            <- Locally saved notes & programs
 ├── vercel.json             <- Vercel config (security headers)
 ├── robots.txt              <- Keeps the site out of search engines
@@ -36,7 +37,10 @@ throughline/
 └── api/
     ├── generate.js         <- supervision-note "waiter" (holds your key)
     ├── generate-family.js  <- family-note "waiter"
-    └── generate-goals.js   <- program-builder "waiter"
+    ├── generate-goals.js   <- program-builder "waiter"
+    ├── generate-reauth.js  <- reauthorization "waiter"
+    └── lib/
+        └── payer-rules.js  <- per-payer drafting bias (Optum, Tricare, etc.)
 ```
 
 Keep this folder structure as-is. The `api/` folder is special — Vercel
@@ -132,6 +136,13 @@ If it works — you're done. Share the link with your BCBAs.
 - Before any real-world clinical use with identifiable info, you'll need a signed
   BAA (Business Associate Agreement) with Anthropic and proper infrastructure.
   That's a later step, not a pilot step.
+- The **Reauthorization Assistant** accepts PDF uploads (treatment plans, assessment
+  reports) that can contain real client identifiers baked into the file itself —
+  unlike the scratchpad, these can't be hand-typed as "the learner." It reads and
+  redacts likely identifiers **in the browser** before sending anything to the AI,
+  and shows you the redacted text to review/edit first — but that scrubbing is
+  automated and not perfect. Use fictional/de-identified test PDFs only until you
+  have a signed BAA.
 
 ---
 

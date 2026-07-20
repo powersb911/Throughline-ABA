@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Throughline — Reauthorization Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+body {
+  --paper: #f1efe8;
+  --paper-2: #f8f6f0;
+  --ink: #1c1a24;
+  --ink-soft: #4f4b58;
+  --ink-faint: #87828f;
+  --line: #d6d2e0;
+  --indigo: #4b3f72;
+  --indigo-deep: #362d54;
+  --indigo-tint: #ece9f5;
+  --teal: #2f6b5e;
+  --teal-tint: #e7efea;
+  --teal-deep: #234f46;
+  --rust: #b0573c;
+  --rust-tint: #f5e6e1;
+  --rust-deep: #8c3a22;
+  --gold: #a87f3d;
+  --gold-tint: #fdf4dc;
+  --gold-deep: #7a5a10;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, #eee9f6 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #eef0ec 0%, transparent 55%),
+    var(--paper);
+  color: var(--ink);
+  font-family: 'Public Sans', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tl-root { padding: 40px 28px 56px; }
+.tl-wrap { max-width: 1280px; margin: 0 auto; }
+
+/* Header */
+.tl-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+.tl-brand { display: flex; align-items: center; gap: 16px; }
+.tl-mark {
+  width: 46px; height: 46px; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--indigo); color: var(--paper-2);
+  font-family: 'Newsreader', serif; font-size: 26px; font-weight: 500;
+  border-radius: 13px; box-shadow: 0 6px 18px rgba(75,63,114,0.28);
+}
+.tl-header h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 30px; letter-spacing: -0.01em; margin: 0; line-height: 1; }
+.tl-privacy {
+  display: flex; align-items: center; gap: 7px; color: var(--indigo-deep); background: var(--indigo-tint);
+  padding: 8px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid #d9d2ea;
+}
+.tl-privacy svg { width: 15px; height: 15px; }
+
+/* Beta banner */
+.tl-beta-banner {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--gold-tint); border: 1px solid #e8d48a; color: var(--gold-deep);
+  border-radius: 14px; padding: 13px 16px; margin-bottom: 22px; font-size: 13.5px; line-height: 1.55;
+}
+.tl-beta-banner svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+.tl-beta-banner strong { font-weight: 700; }
+
+/* Panel */
+.tl-panel {
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 20px; padding: 28px 28px 24px;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06);
+}
+.tl-panel h2 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 23px; margin: 0 0 6px; letter-spacing: -0.01em; }
+.tl-panel-desc { margin: 0 0 24px; color: var(--ink-soft); max-width: 78ch; font-size: 14.5px; }
+
+.tl-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase; }
+.tl-label-hint { font-size: 11.5px; color: var(--ink-faint); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+input[type="text"], select, textarea {
+  width: 100%; background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 11px;
+  padding: 11px 14px; font-family: 'Public Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+input[type="text"]:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--indigo); box-shadow: 0 0 0 4px rgba(75,63,114,0.10);
+}
+select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 36px; }
+.tl-select-wrap { position: relative; }
+.tl-select-wrap svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--ink-faint); pointer-events: none; }
+textarea { min-height: 90px; resize: vertical; line-height: 1.6; font-size: 14.5px; }
+input::placeholder, textarea::placeholder { color: #a7a2ae; font-weight: 400; }
+
+/* Input grid */
+.reauth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+@media (max-width: 900px) { .reauth-grid { grid-template-columns: 1fr; } }
+.reauth-field { display: flex; flex-direction: column; gap: 6px; }
+.reauth-field.full { grid-column: 1 / -1; }
+
+/* Dropzones */
+.tl-dropzone {
+  border: 2px dashed var(--line); border-radius: 16px; padding: 20px;
+  background: #fffdf9; transition: border-color 0.15s, background 0.15s; cursor: pointer;
+  text-align: center;
+}
+.tl-dropzone.drag-over { border-color: var(--indigo); background: var(--indigo-tint); }
+.tl-dropzone.has-file { cursor: default; text-align: left; }
+.dz-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 4px; }
+.dz-empty svg { width: 26px; height: 26px; color: var(--ink-faint); }
+.dz-title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.dz-sub { font-size: 12px; color: var(--ink-faint); }
+.dz-filled { display: none; }
+.dz-filled.visible { display: block; }
+.dz-file-row { display: flex; align-items: center; gap: 10px; }
+.dz-file-row svg { width: 20px; height: 20px; color: var(--indigo); flex-shrink: 0; }
+.dz-filename { font-size: 13.5px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz-filesize { font-size: 12px; color: var(--ink-faint); flex-shrink: 0; }
+.dz-remove {
+  flex-shrink: 0; background: transparent; border: 1px solid var(--line); border-radius: 8px;
+  padding: 5px 10px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+}
+.dz-remove:hover { border-color: var(--rust); color: var(--rust-deep); }
+.dz-status { margin-top: 8px; font-size: 12px; color: var(--indigo-deep); display: flex; align-items: center; gap: 6px; }
+.dz-status svg { width: 13px; height: 13px; }
+.dz-status.error { color: var(--rust-deep); }
+
+/* Extracted-text review */
+.dz-review { margin-top: 10px; display: none; }
+.dz-review.visible { display: block; }
+.dz-review-note {
+  display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--gold-deep);
+  background: var(--gold-tint); border: 1px solid #e8d48a; border-radius: 8px; padding: 6px 10px; margin-bottom: 8px;
+}
+.dz-review-note svg { width: 13px; height: 13px; flex-shrink: 0; }
+.dz-review textarea { min-height: 110px; font-size: 12.5px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+/* Library import */
+.lib-import-preview {
+  margin-top: 8px; display: none; flex-wrap: wrap; gap: 6px;
+}
+.lib-import-preview.visible { display: flex; }
+.lib-chip {
+  font-size: 12px; font-weight: 600; color: var(--indigo-deep); background: var(--indigo-tint);
+  border: 1px solid #d9d2ea; border-radius: 999px; padding: 4px 10px;
+}
+
+/* Actions */
+.tl-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 22px; }
+button { cursor: pointer; font-family: 'Public Sans', sans-serif; display: inline-flex; align-items: center; gap: 8px; border: none; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.btn-generate {
+  padding: 13px 28px; border-radius: 12px; font-size: 15px; font-weight: 600;
+  background: var(--indigo); color: var(--paper-2);
+  box-shadow: 0 6px 18px rgba(75,63,114,0.26); transition: all 0.15s;
+}
+.btn-generate:hover:not(:disabled) { background: var(--indigo-deep); transform: translateY(-1px); }
+.btn-generate svg { width: 16px; height: 16px; }
+.spin { animation: spin 0.9s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tl-error {
+  display: flex; align-items: center; gap: 8px; margin-top: 16px; padding: 12px 14px; border-radius: 11px;
+  background: var(--rust-tint); color: var(--rust-deep); font-size: 13.5px; font-weight: 500; border: 1px solid #eccfc4;
+}
+.tl-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Dashboard */
+#dashboard { display: none; margin-top: 28px; }
+.dashboard-grid { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; }
+@media (max-width: 980px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+/* Left column - metrics */
+.metrics-panel {
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06); position: sticky; top: 20px;
+}
+.metrics-panel h3 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 18px; margin: 0 0 14px; }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.stat-tile {
+  background: #fffdf9; border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px;
+  text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.stat-tile:hover { border-color: var(--indigo); }
+.stat-tile.open { background: var(--indigo-tint); border-color: #d9d2ea; }
+.stat-num { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; line-height: 1; }
+.stat-num.mastered { color: var(--teal-deep); }
+.stat-num.active { color: var(--indigo-deep); }
+.stat-num.plateaued { color: var(--rust-deep); }
+.stat-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 4px; }
+.stat-list { display: none; margin-bottom: 14px; }
+.stat-list.visible { display: block; }
+.stat-list-item { padding: 8px 10px; border-radius: 8px; background: #fffdf9; border: 1px solid var(--line); font-size: 12.5px; margin-bottom: 6px; }
+.stat-list-item .item-name { font-weight: 700; display: block; margin-bottom: 2px; }
+.stat-list-item .item-note { color: var(--ink-soft); }
+
+.trend-table { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.trend-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: #fffdf9; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12.5px;
+}
+.trend-behavior { font-weight: 600; flex: 1; }
+.trend-nums { color: var(--ink-faint); font-size: 11.5px; white-space: nowrap; }
+.trend-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.trend-badge.decreasing { background: var(--teal-tint); color: var(--teal-deep); }
+.trend-badge.increasing { background: var(--rust-tint); color: var(--rust-deep); }
+.trend-badge.stable { background: #ece9e2; color: var(--ink-soft); }
+.metrics-empty { font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
+
+/* Right column - sections */
+.sections-col { display: flex; flex-direction: column; gap: 14px; }
+.tl-card {
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; padding: 0;
+  box-shadow: 28px 28px 60px rgba(27,33,36,0.06); border-top: 3px solid var(--indigo); overflow: hidden;
+}
+.tl-card-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 15px 18px; cursor: pointer; user-select: none;
+}
+.tl-card-label { font-family: 'Newsreader', serif; font-size: 16px; font-weight: 500; }
+.tl-card-head-right { display: flex; align-items: center; gap: 8px; }
+.chevron { width: 15px; height: 15px; color: var(--ink-faint); transition: transform 0.2s; }
+.tl-card.collapsed .chevron { transform: rotate(-90deg); }
+.tl-card-body-wrap { padding: 0 18px 18px; }
+.tl-card.collapsed .tl-card-body-wrap { display: none; }
+.tl-card-body { font-size: 14px; line-height: 1.72; color: #272c2e; white-space: pre-wrap; }
+
+.btn-copy {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  background: var(--indigo); color: var(--paper-2); border: 1px solid var(--indigo); transition: all 0.15s; white-space: nowrap;
+}
+.btn-copy:hover { background: var(--indigo-deep); }
+.btn-copy.copied { background: var(--indigo-tint); color: var(--indigo-deep); border-color: #d9d2ea; }
+.btn-copy svg { width: 12px; height: 12px; }
+.btn-edit {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  background: transparent; color: var(--indigo); border: 1px solid var(--indigo); transition: all 0.15s; white-space: nowrap;
+}
+.btn-edit:hover { background: var(--indigo-tint); }
+.btn-edit svg { width: 12px; height: 12px; }
+.btn-save-edit, .btn-cancel-edit {
+  padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.btn-save-edit { background: var(--indigo); color: var(--paper-2); border: 1px solid var(--indigo); }
+.btn-save-edit:hover { background: var(--indigo-deep); }
+.btn-cancel-edit { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); }
+.btn-cancel-edit:hover { border-color: var(--ink-faint); }
+.card-edit-area {
+  width: 100%; min-height: 100px; resize: vertical; background: #fffdf9; color: var(--ink);
+  border: 1px solid var(--indigo); border-radius: 10px; padding: 12px 14px;
+  font-family: 'Public Sans', sans-serif; font-size: 14px; line-height: 1.72;
+  outline: none; box-shadow: 0 0 0 3px rgba(75,63,114,0.10);
+}
+
+/* Footer actions */
+.dashboard-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 20px;
+}
+.btn-secondary {
+  padding: 11px 18px; border-radius: 11px; font-size: 13.5px; font-weight: 600;
+  background: transparent; color: var(--indigo-deep); border: 1px solid #d9d2ea; transition: all 0.15s;
+}
+.btn-secondary:hover { background: var(--indigo-tint); }
+.btn-secondary svg { width: 15px; height: 15px; }
+.btn-primary-outline {
+  padding: 11px 18px; border-radius: 11px; font-size: 13.5px; font-weight: 600;
+  background: var(--indigo); color: var(--paper-2); border: 1px solid var(--indigo); transition: all 0.15s;
+}
+.btn-primary-outline:hover { background: var(--indigo-deep); }
+.btn-primary-outline svg { width: 15px; height: 15px; }
+
+.tl-foot { margin-top: 26px; text-align: center; font-size: 12.5px; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<div class="tl-root">
+  <div class="tl-wrap">
+
+    <header class="tl-header">
+      <div class="tl-brand">
+        <span class="tl-mark">T</span>
+        <div>
+          <h1>Throughline</h1>
+          <nav style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <a href="index.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Supervision</a>
+            <a href="family.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Family Engagement</a>
+            <a href="goals.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Goal Builder</a>
+            <a href="reauthorization.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--indigo-deep); background: var(--indigo-tint); border: 1px solid #d9d2ea; padding: 4px 12px; border-radius: 999px;">Reauthorization</a>
+            <a href="library.html" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-faint); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; transition: all 0.15s;">Library</a>
+          </nav>
+        </div>
+      </div>
+      <div class="tl-privacy">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        Stateless &middot; nothing stored*
+      </div>
+    </header>
+
+    <div class="tl-beta-banner">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span><strong>Beta Testing Mode.</strong> Do not upload documents containing real client names, dates of birth, member IDs, or other identifying information — use fictional or de-identified test files only. Uploaded PDFs are read and scrubbed for likely identifiers <em>in your browser</em> before anything is sent for drafting, and you can review/edit the scrubbed text before continuing — but automated scrubbing is not perfect, and no real client documents should go through this tool until a signed BAA with Anthropic is in place.</span>
+    </div>
+
+    <!-- Input Workspace -->
+    <section class="tl-panel" id="input-workspace">
+      <h2>Reauthorization Assistant</h2>
+      <p class="tl-panel-desc">Upload the prior authorization and newest assessment data, pick the payer, and add anything else worth knowing. The assistant compares the two documents, categorizes every goal, and drafts a payer-ready reauthorization summary — no 10-box form required.</p>
+
+      <div class="reauth-grid">
+
+        <div class="reauth-field">
+          <label class="tl-label">Previous Authorization / Treatment Plan <span class="tl-label-hint">PDF, optional</span></label>
+          <div class="tl-dropzone" id="dz-old" tabindex="0">
+            <input type="file" id="file-old" accept="application/pdf" hidden />
+            <div class="dz-empty" id="dz-old-empty">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="dz-title">Click or drag a PDF here</div>
+              <div class="dz-sub">The old plan — used to detect what's changed</div>
+            </div>
+            <div class="dz-filled" id="dz-old-filled">
+              <div class="dz-file-row">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="dz-filename" id="dz-old-filename"></span>
+                <span class="dz-filesize" id="dz-old-filesize"></span>
+                <button class="dz-remove" id="dz-old-remove" type="button">Remove</button>
+              </div>
+              <div class="dz-status" id="dz-old-status"></div>
+            </div>
+          </div>
+          <div class="dz-review" id="dz-old-review">
+            <div class="dz-review-note">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span id="dz-old-scrub-stats">Review extracted text below — confirm no identifying info remains.</span>
+            </div>
+            <textarea id="dz-old-text" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="reauth-field">
+          <label class="tl-label">New Scored Assessment / Progress Data <span class="tl-label-hint">PDF, optional</span></label>
+          <div class="tl-dropzone" id="dz-new" tabindex="0">
+            <input type="file" id="file-new" accept="application/pdf" hidden />
+            <div class="dz-empty" id="dz-new-empty">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="dz-title">Click or drag a PDF here</div>
+              <div class="dz-sub">VB-MAPP / ABLLS-R export, progress report, graph data…</div>
+            </div>
+            <div class="dz-filled" id="dz-new-filled">
+              <div class="dz-file-row">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="dz-filename" id="dz-new-filename"></span>
+                <span class="dz-filesize" id="dz-new-filesize"></span>
+                <button class="dz-remove" id="dz-new-remove" type="button">Remove</button>
+              </div>
+              <div class="dz-status" id="dz-new-status"></div>
+            </div>
+          </div>
+          <div class="dz-review" id="dz-new-review">
+            <div class="dz-review-note">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span id="dz-new-scrub-stats">Review extracted text below — confirm no identifying info remains.</span>
+            </div>
+            <textarea id="dz-new-text" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="reauth-field">
+          <label class="tl-label" for="f-payer">Payer</label>
+          <div class="tl-select-wrap">
+            <select id="f-payer">
+              <option value="Optum/UHC">Optum / United Healthcare</option>
+              <option value="Tricare">Tricare</option>
+              <option value="BCBS">Blue Cross Blue Shield (BCBS)</option>
+              <option value="Aetna">Aetna</option>
+              <option value="Cigna">Cigna / Evernorth</option>
+              <option value="Medicaid">Medicaid</option>
+              <option value="Generic">Generic / Internal Use</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <div class="reauth-field">
+          <label class="tl-label" for="f-library">Import Saved Goals from Library <span class="tl-label-hint">optional</span></label>
+          <div class="tl-select-wrap">
+            <select id="f-library">
+              <option value="">— None —</option>
+            </select>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="lib-import-preview" id="lib-preview"></div>
+        </div>
+
+        <div class="reauth-field full">
+          <label class="tl-label" for="f-braindump">Clinical Brain Dump</label>
+          <textarea id="f-braindump" style="min-height: 140px;" placeholder="Type or voice-to-text any raw, unstructured clinical notes here (e.g., medication changes, parent attendance, specific barriers, or focus areas for the next 6 months)..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="tl-actions">
+        <button class="btn-generate" id="generate-btn" disabled>
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
+          Analyze &amp; Draft
+        </button>
+      </div>
+
+      <div class="tl-error" id="error-box" style="display:none;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="error-msg"></span>
+      </div>
+    </section>
+
+    <!-- Interactive Review Dashboard -->
+    <div id="dashboard">
+      <div class="dashboard-grid">
+
+        <!-- Left: Extracted Data Summary -->
+        <aside class="metrics-panel">
+          <h3>Extracted Data Summary</h3>
+
+          <div class="stat-row">
+            <div class="stat-tile" id="stat-mastered" data-list="list-mastered">
+              <div class="stat-num mastered" id="num-mastered">0</div>
+              <div class="stat-label">Mastered</div>
+            </div>
+            <div class="stat-tile" id="stat-active" data-list="list-active">
+              <div class="stat-num active" id="num-active">0</div>
+              <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-tile" id="stat-plateaued" data-list="list-plateaued">
+              <div class="stat-num plateaued" id="num-plateaued">0</div>
+              <div class="stat-label">Plateaued</div>
+            </div>
+          </div>
+
+          <div class="stat-list" id="list-mastered"></div>
+          <div class="stat-list" id="list-active"></div>
+          <div class="stat-list" id="list-plateaued"></div>
+
+          <h3 style="margin-top: 4px;">Behavior Trends</h3>
+          <div class="trend-table" id="trend-table"></div>
+
+        </aside>
+
+        <!-- Right: Editable narrative sections -->
+        <div class="sections-col" id="sections-col">
+          <!-- cards injected by JS -->
+        </div>
+
+      </div>
+
+      <div class="dashboard-footer">
+        <button class="btn-secondary" id="copy-all-btn" type="button">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy All to Clipboard
+        </button>
+        <button class="btn-primary-outline" id="export-btn" type="button">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export to Document
+        </button>
+      </div>
+    </div>
+
+    <footer class="tl-foot">
+      Draft output — the supervising BCBA reviews and approves every summary before submission to a payer.
+      Nothing you upload or type here is stored; closing the tab clears everything.*
+    </footer>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var SECTION_DEFS = [
+    { key: 'behaviorReduction',   label: 'Behavior Reduction Trends & Progress' },
+    { key: 'skillAcquisition',    label: 'Skill Acquisition Summary (Mastered vs. Active)' },
+    { key: 'barriers',            label: 'Barriers to Progress & Clinical Rationales' },
+    { key: 'caregiverInvolvement',label: 'Caregiver Involvement & Fidelity Metrics' },
+    { key: 'coordinationOfCare',  label: 'Coordination of Care (Multi-disciplinary)' },
+    { key: 'transitionFading',    label: 'Transition, Fading, & Discharge Plan' },
+    { key: 'medicalNecessity',    label: 'Final Medical Necessity Justification Statement' },
+  ];
+
+  var GOAL_OUTPUT_KEYS = ['objective', 'baseline', 'dataCollectionMethod', 'location', 'teachingProcedures', 'sd', 'materials', 'promptingProcedure', 'rationale'];
+
+  // ── PDF.js setup ──────────────────────────────────────────────────────────
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  async function extractPdfText(file) {
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('The PDF reader failed to load (check your internet connection) — reload the page and try again.');
+    }
+    var buf = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    var pages = [];
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var page = await pdf.getPage(i);
+      var content = await page.getTextContent();
+      pages.push(content.items.map(function (it) { return it.str; }).join(' '));
+    }
+    return pages.join('\n\n').trim();
+  }
+
+  // ── Client-side document PHI scrubber ───────────────────────────────────
+  var DOC_WHITELIST = new RegExp('^(' + [
+    'The','A','An','This','That','These','Those','He','She','They','We','I','It','His','Her','Their','Our','Your','Its',
+    'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
+    'January','February','March','April','May','June','July','August','September','October','November','December',
+    'Jan','Feb','Mar','Apr','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
+    'DTT','NET','BIP','AAC','VB','ABA','BCBA','RBT','HIPAA','IEP','IFSP','SD','IOA','PECS','ASD','DSM','ICD',
+    'Goal','Goals','Target','Baseline','Session','Sessions','Client','Patient','Learner','Student','Program',
+    'Skill','Skills','Domain','Data','Progress','Treatment','Plan','Assessment','Report','Summary',
+    'Behavior','Behaviors','Reduction','Acquisition','Mastery','Criteria','Independent','Prompted','Prompt',
+    'Gestural','Physical','Verbal','Model','Location','Materials','Notes','Procedure','Procedures','Objective',
+    'Rationale','Recommended','Active','Mastered','Plateaued','Provider','Clinic','Home','Community','Table',
+    'Setting','Week','Weeks','Month','Months','Year','Years','Hours','Hour','Staff','Parent','Parents','Guardian',
+    'Guardians','Caregiver','Caregivers','Family','Doctor','Dr','Mr','Mrs','Ms','Miss','Yes','No','Not','All',
+    'One','Two','Three','Four','Five','None','Some','Both','Each','New','Old','Other','Today','Now','Then',
+    'Here','There','What','Who','Which','How','Page','Date','Signature','Diagnosis','Autism','Spectrum','Disorder',
+    'Insurance','Authorization','Reauthorization','Frequency','Duration','Rate','Percent','Percentage',
+    'Optum','Tricare','Medicaid','Aetna','Cigna','Evernorth','UHC','BCBS','VB-MAPP','ABLLS-R','AFLS','PEAK','Vineland',
+  ].join('|') + ')$');
+
+  function scrubDocumentText(raw) {
+    if (!raw) return { text: raw, counts: { labeled: 0, contact: 0, dates: 0, ids: 0, names: 0 } };
+    var s = raw;
+    var counts = { labeled: 0, contact: 0, dates: 0, ids: 0, names: 0 };
+
+    s = s.replace(/\b(Client|Patient|Learner|Student)\s*Name\s*:?\s*([^\n]{1,60})/gi, function (m, label) { counts.labeled++; return label + ' Name: [REDACTED]'; });
+    s = s.replace(/\b(Parent|Guardian|Caregiver)(?:\/Guardian)?\s*Name\s*:?\s*([^\n]{1,60})/gi, function (m, label) { counts.labeled++; return label + ' Name: [REDACTED]'; });
+    s = s.replace(/\bDate of Birth\s*:?\s*([^\n]{1,30})/gi, function () { counts.labeled++; return 'Date of Birth: [REDACTED]'; });
+    s = s.replace(/\bDOB\s*:?\s*([^\n]{1,30})/gi, function () { counts.labeled++; return 'DOB: [REDACTED]'; });
+    s = s.replace(/\b(Member\s*ID|MRN|Client\s*ID|Policy\s*(?:#|Number)|Case\s*(?:#|Number))\s*:?\s*([^\n]{1,40})/gi, function (m, label) { counts.ids++; return label + ': [REDACTED]'; });
+    s = s.replace(/\bAddress\s*:?\s*([^\n]{1,80})/gi, function () { counts.labeled++; return 'Address: [REDACTED]'; });
+
+    s = s.replace(/\(?(\+?1[\s.\-]?)?\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4}\b/g, function () { counts.contact++; return '[phone removed]'; });
+    s = s.replace(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/g, function () { counts.contact++; return '[email removed]'; });
+    s = s.replace(/\b\d{3}-\d{2}-\d{4}\b/g, function () { counts.ids++; return '[ID removed]'; });
+
+    s = s.replace(/\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12]\d|3[01])[\/\-](\d{2}|\d{4})\b/g, function () { counts.dates++; return '[date removed]'; });
+    s = s.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4}\b/gi, function () { counts.dates++; return '[date removed]'; });
+
+    var freq = {};
+    var re = /\b[A-Z][a-z]{1,14}\b/g;
+    var m;
+    while ((m = re.exec(s))) {
+      var w = m[0];
+      if (DOC_WHITELIST.test(w)) continue;
+      freq[w] = (freq[w] || 0) + 1;
+    }
+    Object.keys(freq).forEach(function (w) {
+      if (freq[w] >= 3) {
+        s = s.replace(new RegExp('\\b' + w + '\\b', 'g'), '[name removed]');
+        counts.names++;
+      }
+    });
+
+    return { text: s, counts: counts };
+  }
+
+  function scrubStatsLabel(counts) {
+    var parts = [];
+    if (counts.names) parts.push(counts.names + ' likely name' + (counts.names > 1 ? 's' : ''));
+    if (counts.labeled) parts.push(counts.labeled + ' labeled field' + (counts.labeled > 1 ? 's' : '') + ' (name/DOB/address)');
+    if (counts.ids) parts.push(counts.ids + ' ID number' + (counts.ids > 1 ? 's' : ''));
+    if (counts.dates) parts.push(counts.dates + ' date' + (counts.dates > 1 ? 's' : ''));
+    if (counts.contact) parts.push(counts.contact + ' contact detail' + (counts.contact > 1 ? 's' : ''));
+    if (!parts.length) return 'No obvious identifiers found — still review the text below before continuing.';
+    return 'Redacted: ' + parts.join(', ') + '. Review below — automated scrubbing is not perfect.';
+  }
+
+  // ── Dropzone wiring (shared for old/new) ────────────────────────────────
+  var dzState = { old: { file: null, extracting: false }, new: { file: null, extracting: false } };
+
+  function setupDropzone(slot) {
+    var zone = document.getElementById('dz-' + slot);
+    var input = document.getElementById('file-' + slot);
+    var empty = document.getElementById('dz-' + slot + '-empty');
+    var filled = document.getElementById('dz-' + slot + '-filled');
+    var filenameEl = document.getElementById('dz-' + slot + '-filename');
+    var filesizeEl = document.getElementById('dz-' + slot + '-filesize');
+    var statusEl = document.getElementById('dz-' + slot + '-status');
+    var removeBtn = document.getElementById('dz-' + slot + '-remove');
+    var reviewWrap = document.getElementById('dz-' + slot + '-review');
+    var reviewStats = document.getElementById('dz-' + slot + '-scrub-stats');
+    var reviewText = document.getElementById('dz-' + slot + '-text');
+
+    zone.addEventListener('click', function (e) {
+      if (e.target === removeBtn) return;
+      if (!dzState[slot].file) input.click();
+    });
+    zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && !dzState[slot].file) { e.preventDefault(); input.click(); }
+    });
+    ['dragover', 'dragenter'].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', function (e) {
+      var f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+    input.addEventListener('change', function () {
+      if (input.files && input.files[0]) handleFile(input.files[0]);
+    });
+    removeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dzState[slot].file = null;
+      input.value = '';
+      zone.classList.remove('has-file');
+      empty.style.display = 'flex';
+      filled.classList.remove('visible');
+      reviewWrap.classList.remove('visible');
+      reviewText.value = '';
+      statusEl.textContent = '';
+      updateGenerateBtn();
+    });
+
+    async function handleFile(f) {
+      if (f.type !== 'application/pdf') {
+        statusEl.textContent = 'Only PDF files are supported in v1.';
+        statusEl.classList.add('error');
+        return;
+      }
+      dzState[slot].file = f;
+      zone.classList.add('has-file');
+      empty.style.display = 'none';
+      filled.classList.add('visible');
+      filenameEl.textContent = f.name;
+      filesizeEl.textContent = f.size > 1024 * 1024
+        ? (f.size / (1024 * 1024)).toFixed(1) + ' MB'
+        : Math.max(1, Math.round(f.size / 1024)) + ' KB';
+      statusEl.classList.remove('error');
+      statusEl.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> Extracting text…';
+      dzState[slot].extracting = true;
+      updateGenerateBtn();
+
+      try {
+        var raw = await extractPdfText(f);
+        statusEl.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> Scrubbing for identifiers…';
+        var scrubbed = scrubDocumentText(raw);
+        reviewText.value = scrubbed.text;
+        reviewStats.textContent = scrubStatsLabel(scrubbed.counts);
+        reviewWrap.classList.add('visible');
+        statusEl.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Extracted ' + raw.length.toLocaleString() + ' characters — review below.';
+      } catch (err) {
+        statusEl.textContent = err && err.message ? err.message : 'Could not read this PDF.';
+        statusEl.classList.add('error');
+        reviewWrap.classList.remove('visible');
+      } finally {
+        dzState[slot].extracting = false;
+        updateGenerateBtn();
+      }
+    }
+  }
+
+  setupDropzone('old');
+  setupDropzone('new');
+
+  // ── Library import ───────────────────────────────────────────────────────
+  var libSelect = document.getElementById('f-library');
+  var libPreview = document.getElementById('lib-preview');
+  var libraryContextText = '';
+
+  function getLibrary() {
+    try { return JSON.parse(localStorage.getItem('tl-library')) || {}; } catch (e) { return {}; }
+  }
+
+  (function populateLibrarySelect() {
+    var lib = getLibrary();
+    Object.keys(lib).sort().forEach(function (folder) {
+      var goals = (lib[folder] || []).filter(function (n) { return n.type === 'goal'; });
+      if (!goals.length) return;
+      var opt = document.createElement('option');
+      opt.value = folder;
+      opt.textContent = folder + ' (' + goals.length + ' saved goal' + (goals.length > 1 ? 's' : '') + ')';
+      libSelect.appendChild(opt);
+    });
+  })();
+
+  libSelect.addEventListener('change', function () {
+    libPreview.innerHTML = '';
+    libPreview.classList.remove('visible');
+    libraryContextText = '';
+    if (!libSelect.value) { updateGenerateBtn(); return; }
+    var lib = getLibrary();
+    var goals = (lib[libSelect.value] || []).filter(function (n) { return n.type === 'goal'; });
+    if (!goals.length) { updateGenerateBtn(); return; }
+
+    libraryContextText = goals.map(function (g, i) {
+      return 'Goal ' + (i + 1) + ' — ' + (g.skillArea || g.domain || 'Untitled') + '\n' +
+        GOAL_OUTPUT_KEYS.map(function (k) { return g[k] ? (k + ': ' + g[k]) : null; }).filter(Boolean).join('\n');
+    }).join('\n\n');
+
+    goals.forEach(function (g) {
+      var chip = document.createElement('span');
+      chip.className = 'lib-chip';
+      chip.textContent = g.skillArea || g.domain || 'Goal';
+      libPreview.appendChild(chip);
+    });
+    libPreview.classList.add('visible');
+    updateGenerateBtn();
+  });
+
+  // ── Generate gating ──────────────────────────────────────────────────────
+  var generateBtn = document.getElementById('generate-btn');
+  var errorBox = document.getElementById('error-box');
+  var errorMsg = document.getElementById('error-msg');
+  var brainDumpEl = document.getElementById('f-braindump');
+
+  function updateGenerateBtn() {
+    var anyExtracting = dzState.old.extracting || dzState.new.extracting;
+    var hasInput = !!(document.getElementById('dz-old-text').value.trim() ||
+      document.getElementById('dz-new-text').value.trim() ||
+      libraryContextText.trim() ||
+      brainDumpEl.value.trim());
+    generateBtn.disabled = anyExtracting || !hasInput;
+  }
+  brainDumpEl.addEventListener('input', updateGenerateBtn);
+  document.getElementById('dz-old-text').addEventListener('input', updateGenerateBtn);
+  document.getElementById('dz-new-text').addEventListener('input', updateGenerateBtn);
+
+  function showError(msg) { errorMsg.textContent = msg; errorBox.style.display = 'flex'; }
+  function hideError() { errorBox.style.display = 'none'; }
+
+  // ── Generate ─────────────────────────────────────────────────────────────
+  var LOADING_LINES = ['Comparing documents…', 'Categorizing goals…', 'Drafting sections…', 'Applying payer guidance…'];
+  var loadingTimer = null, loadingIdx = 0;
+  var lastResult = null;
+
+  generateBtn.addEventListener('click', generate);
+
+  async function generate() {
+    setLoading(true);
+    hideError();
+    document.getElementById('dashboard').style.display = 'none';
+
+    var payload = {
+      payer: document.getElementById('f-payer').value,
+      oldDocText: document.getElementById('dz-old-text').value,
+      newDocText: document.getElementById('dz-new-text').value,
+      libraryContext: libraryContextText,
+      brainDump: brainDumpEl.value,
+    };
+
+    try {
+      var res = await fetch('/api/generate-reauth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      lastResult = data;
+      renderDashboard(data);
+    } catch (err) {
+      showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setLoading(on) {
+    if (on) {
+      loadingIdx = 0;
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + LOADING_LINES[0];
+      loadingTimer = setInterval(function () {
+        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
+        generateBtn.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> ' + LOADING_LINES[loadingIdx];
+      }, 1400);
+    } else {
+      clearInterval(loadingTimer);
+      updateGenerateBtn();
+      if (!generateBtn.disabled) {
+        generateBtn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg> Analyze &amp; Draft';
+      }
+    }
+  }
+
+  // ── Dashboard rendering ──────────────────────────────────────────────────
+  var PENCIL_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+  var COPY_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+
+  function renderDashboard(data) {
+    var m = data.metrics;
+
+    document.getElementById('num-mastered').textContent = m.goalsMastered.length;
+    document.getElementById('num-active').textContent = m.goalsActive.length;
+    document.getElementById('num-plateaued').textContent = m.goalsPlateaued.length;
+
+    renderStatList('list-mastered', m.goalsMastered);
+    renderStatList('list-active', m.goalsActive);
+    renderStatList('list-plateaued', m.goalsPlateaued);
+
+    var trendTable = document.getElementById('trend-table');
+    trendTable.innerHTML = '';
+    if (!m.behaviorTrends.length) {
+      trendTable.innerHTML = '<div class="metrics-empty">No behavior trend data found in the source material.</div>';
+    } else {
+      m.behaviorTrends.forEach(function (t) {
+        var row = document.createElement('div');
+        row.className = 'trend-row';
+        row.innerHTML =
+          '<span class="trend-behavior">' + escapeHtml(t.behavior) + '</span>' +
+          '<span class="trend-nums">' + escapeHtml(t.baseline) + ' → ' + escapeHtml(t.current) + '</span>' +
+          '<span class="trend-badge ' + escapeHtml(t.trend) + '">' + escapeHtml(t.trend) + '</span>';
+        trendTable.appendChild(row);
+      });
+    }
+
+    var col = document.getElementById('sections-col');
+    col.innerHTML = '';
+    SECTION_DEFS.forEach(function (def) {
+      var card = document.createElement('article');
+      card.className = 'tl-card';
+      card.id = 'card-' + def.key;
+      card.innerHTML =
+        '<div class="tl-card-head">' +
+          '<span class="tl-card-label">' + def.label + '</span>' +
+          '<div class="tl-card-head-right">' +
+            '<button class="btn-copy" data-field="' + def.key + '" type="button">' + COPY_SVG + ' Copy</button>' +
+            '<button class="btn-edit" data-field="' + def.key + '" type="button">' + PENCIL_SVG + ' Edit</button>' +
+            '<svg class="chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div class="tl-card-body-wrap"><div class="tl-card-body" id="out-' + def.key + '"></div></div>';
+      col.appendChild(card);
+      document.getElementById('out-' + def.key).textContent = data.sections[def.key] || '';
+    });
+
+    wireCardInteractions();
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderStatList(listId, items) {
+    var el = document.getElementById(listId);
+    el.innerHTML = '';
+    if (!items.length) {
+      el.innerHTML = '<div class="metrics-empty" style="padding: 4px 2px;">None identified.</div>';
+      return;
+    }
+    items.forEach(function (it) {
+      var row = document.createElement('div');
+      row.className = 'stat-list-item';
+      row.innerHTML = '<span class="item-name">' + escapeHtml(it.name) + '</span><span class="item-note">' + escapeHtml(it.note) + '</span>';
+      el.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  document.querySelectorAll('.stat-tile').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      var listId = tile.getAttribute('data-list');
+      var list = document.getElementById(listId);
+      var wasOpen = list.classList.contains('visible');
+      document.querySelectorAll('.stat-list').forEach(function (l) { l.classList.remove('visible'); });
+      document.querySelectorAll('.stat-tile').forEach(function (t) { t.classList.remove('open'); });
+      if (!wasOpen) { list.classList.add('visible'); tile.classList.add('open'); }
+    });
+  });
+
+  function wireCardInteractions() {
+    document.querySelectorAll('.tl-card').forEach(function (card) {
+      var head = card.querySelector('.tl-card-head');
+      var chevron = head.querySelector('.chevron');
+      head.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-copy') || e.target.closest('.btn-edit')) return;
+        card.classList.toggle('collapsed');
+      });
+    });
+
+    document.querySelectorAll('.btn-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var field = btn.getAttribute('data-field');
+        var text = document.getElementById('out-' + field).textContent;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.classList.add('copied');
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+          setTimeout(function () { btn.classList.remove('copied'); btn.innerHTML = COPY_SVG + ' Copy'; }, 1600);
+        });
+      });
+    });
+
+    document.querySelectorAll('.btn-edit').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var field = btn.getAttribute('data-field');
+        var body = document.getElementById('out-' + field);
+        var head = btn.closest('.tl-card-head-right');
+        var copyBtn = head.querySelector('.btn-copy');
+        var originalText = body.textContent;
+
+        var ta = document.createElement('textarea');
+        ta.className = 'card-edit-area';
+        ta.value = originalText;
+        body.textContent = '';
+        body.appendChild(ta);
+        ta.focus();
+
+        copyBtn.style.display = 'none';
+        btn.style.display = 'none';
+
+        var saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-save-edit'; saveBtn.type = 'button'; saveBtn.textContent = 'Save';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-cancel-edit'; cancelBtn.type = 'button'; cancelBtn.textContent = 'Cancel';
+        head.insertBefore(cancelBtn, head.lastElementChild);
+        head.insertBefore(saveBtn, cancelBtn);
+
+        function exitEdit(text) {
+          body.textContent = text;
+          copyBtn.style.display = '';
+          btn.style.display = '';
+          saveBtn.remove();
+          cancelBtn.remove();
+          if (lastResult) lastResult.sections[field] = text;
+        }
+        saveBtn.addEventListener('click', function () { exitEdit(ta.value); });
+        cancelBtn.addEventListener('click', function () { exitEdit(originalText); });
+      });
+    });
+  }
+
+  // ── Footer actions ───────────────────────────────────────────────────────
+  document.getElementById('copy-all-btn').addEventListener('click', function () {
+    if (!lastResult) return;
+    var text = SECTION_DEFS.map(function (def) {
+      return def.label.toUpperCase() + '\n' + (lastResult.sections[def.key] || '') + '\n';
+    }).join('\n');
+    navigator.clipboard.writeText(text).then(function () {
+      var btn = document.getElementById('copy-all-btn');
+      var original = btn.innerHTML;
+      btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg> Copied all sections';
+      setTimeout(function () { btn.innerHTML = original; }, 1800);
+    });
+  });
+
+  document.getElementById('export-btn').addEventListener('click', function () {
+    if (!lastResult) return;
+    var bodyHtml = SECTION_DEFS.map(function (def) {
+      var content = (lastResult.sections[def.key] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+      return '<h2 style="font-family:Calibri,sans-serif;font-size:14pt;color:#362d54;">' + def.label + '</h2>' +
+        '<p style="font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5;">' + content + '</p>';
+    }).join('');
+    var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="utf-8"><title>Reauthorization Summary</title></head>' +
+      '<body><h1 style="font-family:Calibri,sans-serif;font-size:18pt;">Reauthorization Summary</h1>' + bodyHtml + '</body></html>';
+    var blob = new Blob(['﻿', doc], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Reauthorization-Summary.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+})();
+</script>
+</body>
+</html>
