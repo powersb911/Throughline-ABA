@@ -581,6 +581,49 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     return pages.join('\n\n').trim();
   }
 
+  // ── Extraction cleanup & size cap ────────────────────────────────────────
+  // Some PDFs (corrupted fonts, malformed scoring grids) extract to bloated,
+  // repetitive garbage rather than real prose. Strip that out before it ever
+  // reaches the scrubber or the network, and hard-cap per-document length so
+  // one oversized upload can't blow the server's request-body limit.
+  var MAX_DOC_CHARS = 300000; // ~300KB per document — far more than any real treatment plan needs
+
+  function cleanExtractedText(text) {
+    if (!text) return { text: text, collapsedRuns: 0 };
+    var collapsedRuns = 0;
+    // Strip common PDF glyph/font-substitution artifacts (e.g. ".notdef.g0001")
+    var t = text.replace(/\.notdef(\.g\d+)?/g, '');
+    // Collapse 3+ blank lines into one
+    t = t.replace(/\n{3,}/g, '\n\n');
+    // Collapse runs of 3+ identical consecutive lines (corrupted grid rendering) into one + note
+    var lines = t.split('\n');
+    var out = [];
+    var i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+      var j = i + 1;
+      while (j < lines.length && lines[j] === line) j++;
+      var runLength = j - i;
+      if (runLength >= 3 && line.trim().length) {
+        out.push(line);
+        out.push('[' + (runLength - 1) + ' more repeated/duplicate lines omitted]');
+        collapsedRuns++;
+      } else {
+        for (var k = i; k < j; k++) out.push(lines[k]);
+      }
+      i = j;
+    }
+    return { text: out.join('\n'), collapsedRuns: collapsedRuns };
+  }
+
+  function truncateText(text, maxChars) {
+    if (!text || text.length <= maxChars) return { text: text, truncated: false };
+    var cut = text.slice(0, maxChars);
+    var lastBreak = cut.lastIndexOf('\n\n');
+    if (lastBreak > maxChars * 0.7) cut = cut.slice(0, lastBreak);
+    return { text: cut + '\n\n[Document truncated — only the first ~' + Math.round(cut.length / 1000) + 'K characters were included. Remove unnecessary pages and re-upload if the truncated portion matters.]', truncated: true };
+  }
+
   // ── Client-side document PHI scrubber ───────────────────────────────────
   var DOC_WHITELIST = new RegExp('^(' + [
     'The','A','An','This','That','These','Those','He','She','They','We','I','It','His','Her','Their','Our','Your','Its',
@@ -719,12 +762,17 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
       try {
         var raw = await extractPdfText(f);
+        var cleaned = cleanExtractedText(raw);
+        var capped = truncateText(cleaned.text, MAX_DOC_CHARS);
         statusEl.innerHTML = '<span class="spin"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span> Scrubbing for identifiers…';
-        var scrubbed = scrubDocumentText(raw);
+        var scrubbed = scrubDocumentText(capped.text);
         reviewText.value = scrubbed.text;
-        reviewStats.textContent = scrubStatsLabel(scrubbed.counts);
+        var statsLabel = scrubStatsLabel(scrubbed.counts);
+        if (cleaned.collapsedRuns) statsLabel += ' Collapsed ' + cleaned.collapsedRuns + ' block(s) of repeated/duplicate lines.';
+        if (capped.truncated) statsLabel += ' Document was truncated to ' + MAX_DOC_CHARS.toLocaleString() + ' characters to stay within the server\'s request size limit.';
+        reviewStats.textContent = statsLabel;
         reviewWrap.classList.add('visible');
-        statusEl.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Extracted ' + raw.length.toLocaleString() + ' characters — review below.';
+        statusEl.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Extracted ' + raw.length.toLocaleString() + ' characters' + (capped.truncated ? ' (truncated to ' + capped.text.length.toLocaleString() + ')' : '') + ' — review below.';
       } catch (err) {
         statusEl.textContent = err && err.message ? err.message : 'Could not read this PDF.';
         statusEl.classList.add('error');
@@ -805,6 +853,37 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   function showError(msg) { errorMsg.textContent = msg; errorBox.style.display = 'flex'; }
   function hideError() { errorBox.style.display = 'none'; }
 
+  // Vercel serverless functions hard-cap request bodies at ~4.5MB; stay well under it.
+  var MAX_PAYLOAD_BYTES = 3.5 * 1024 * 1024;
+
+  async function postJson(url, payload) {
+    var body = JSON.stringify(payload);
+    if (body.length > MAX_PAYLOAD_BYTES) {
+      throw new Error(
+        'These documents are too large to submit in one request (' + Math.round(body.length / 1024 / 1024 * 10) / 10 +
+        'MB, limit is ~3.5MB). Try uploading shorter documents, removing unnecessary pages before upload, or trimming the extracted text in the review boxes above.'
+      );
+    }
+    var res;
+    try {
+      res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body });
+    } catch (networkErr) {
+      throw new Error('Could not reach the server. Check your connection and try again.');
+    }
+    var text = await res.text();
+    var data;
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch (parseErr) {
+      if (res.status === 413) {
+        throw new Error('These documents are too large for the server to accept in one request. Try shorter documents or trim the extracted text in the review boxes above.');
+      }
+      throw new Error('The server returned an unexpected response (HTTP ' + res.status + '). Please try again in a moment.');
+    }
+    if (!res.ok) throw new Error(data.error || ('Request failed (HTTP ' + res.status + ').'));
+    return data;
+  }
+
   // ── Generate (two-stage: analyze, then draft) ────────────────────────────
   var LOADING_LINES_STAGE1 = ['Reading documents…', 'Comparing old vs. new…', 'Categorizing goals…'];
   var LOADING_LINES_STAGE2 = ['Drafting updated sections…', 'Applying payer guidance…', 'Preserving original wording…'];
@@ -829,13 +908,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     };
 
     try {
-      var res1 = await fetch('/api/generate-reauth-analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(analyzePayload),
-      });
-      var analysis = await res1.json();
-      if (!res1.ok) throw new Error(analysis.error || 'Something went wrong analyzing the documents.');
+      var analysis = await postJson('/api/generate-reauth-analyze', analyzePayload);
       lastAnalysis = analysis;
 
       setLoading(true, LOADING_LINES_STAGE2);
@@ -848,13 +921,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
         brainDump: brainDumpEl.value,
       };
 
-      var res2 = await fetch('/api/generate-reauth-draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(draftPayload),
-      });
-      var draft = await res2.json();
-      if (!res2.ok) throw new Error(draft.error || 'Something went wrong drafting the document.');
+      var draft = await postJson('/api/generate-reauth-draft', draftPayload);
       lastDraft = draft;
 
       renderDashboard(analysis, draft);
