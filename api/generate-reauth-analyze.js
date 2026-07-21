@@ -21,13 +21,14 @@ Determine sourceType — exactly one of:
 - "insufficient_data": no usable OLD DOCUMENT text was provided, or the extracted text is too sparse or garbled to work with.
 
 ━━━ STEP 2: EXTRACT TEMPLATE STRUCTURE (only if sourceType is "previous_reauth") ━━━
-Break OLD DOCUMENT into its actual sections, in the order they appear in the document. For each section return:
+Break OLD DOCUMENT into its actual sections, in the order they appear in the document. Do NOT copy out each section's full body text — OLD DOCUMENT already exists verbatim in the source; retyping large chunks of it wastes your output budget and risks truncating your own response on long documents. Instead, for each section return lightweight locator anchors that a plain-text search can use to slice the real text out afterward:
 - id: a short stable lower_snake_case slug derived from the heading (e.g., "skill_acquisition_goals").
 - heading: the section's actual heading text as it appears in the document.
 - type: exactly one of "narrative" (free prose), "structured_block" (repeated key:value fields, e.g. a per-goal or per-behavior block with Baseline/Progress Data/Barriers/etc.), "table" (grid/tabular data such as CPT codes, schedules, or a provider coordination table), "static_admin" (identity/demographic/provider fields that should almost never change between authorizations).
-- originalText: the section's full original text, preserved exactly as extracted (keep internal line breaks and structure) so it can be edited in place in the next stage.
+- startAnchor: the exact first 8-10 words of the section's body (not counting the heading itself), copied character-for-character from OLD DOCUMENT including its original punctuation and whitespace — this must be findable with a literal, case-sensitive substring search.
+- endAnchor: the exact last 8-10 words of the section's body, copied character-for-character from OLD DOCUMENT the same way, including the section's final punctuation.
 
-If sourceType is not "previous_reauth", return an empty array for templateSections. Do not invent a structure that isn't actually there.
+If a section's body is shorter than ~16-20 words, startAnchor and endAnchor may overlap or even be identical — that's fine, just keep both exact and findable. If sourceType is not "previous_reauth", return an empty array for templateSections. Do not invent a structure that isn't actually there.
 
 ━━━ STEP 3: DELTA / PROGRESS ANALYSIS ━━━
 Compare OLD DOCUMENT, NEW DOCUMENT, and PREVIOUSLY SAVED GOALS to identify every distinct goal you can find. Classify each into exactly one status:
@@ -44,7 +45,7 @@ List anything a BCBA should double-check because extraction was incomplete, garb
 Never fabricate specific scores, dates, names, or goal details that are not present in the input.
 
 Return ONLY valid JSON with no markdown fences, no preamble, in EXACTLY this shape:
-{"sourceType":"previous_reauth|initial_assessment|insufficient_data","templateSections":[{"id":"...","heading":"...","type":"...","originalText":"..."}],"delta":{"goalCounts":{"total":0,"mastered":0,"inProgress":0,"onHold":0,"discontinued":0,"new":0},"goalsMastered":[{"name":"...","note":"..."}],"goalsInProgress":[{"name":"...","note":"..."}],"goalsOnHold":[{"name":"...","note":"..."}],"goalsDiscontinued":[{"name":"...","note":"..."}],"goalsNew":[{"name":"...","note":"..."}],"behaviorTrends":[{"behavior":"...","baseline":"...","current":"...","trend":"increasing|decreasing|stable"}]},"dataQualityNotes":"..."}`;
+{"sourceType":"previous_reauth|initial_assessment|insufficient_data","templateSections":[{"id":"...","heading":"...","type":"...","startAnchor":"...","endAnchor":"..."}],"delta":{"goalCounts":{"total":0,"mastered":0,"inProgress":0,"onHold":0,"discontinued":0,"new":0},"goalsMastered":[{"name":"...","note":"..."}],"goalsInProgress":[{"name":"...","note":"..."}],"goalsOnHold":[{"name":"...","note":"..."}],"goalsDiscontinued":[{"name":"...","note":"..."}],"goalsNew":[{"name":"...","note":"..."}],"behaviorTrends":[{"behavior":"...","baseline":"...","current":"...","trend":"increasing|decreasing|stable"}]},"dataQualityNotes":"..."}`;
 
 function buildInputString(fields) {
   return [
@@ -72,21 +73,22 @@ const EXAMPLES = [
           id: "client_information",
           heading: "Client Information",
           type: "static_admin",
-          originalText: "Participant: [REDACTED]\nDOB: [REDACTED]",
+          startAnchor: "Participant: [REDACTED]",
+          endAnchor: "DOB: [REDACTED]",
         },
         {
           id: "skill_acquisition_goals",
           heading: "Skill Acquisition Goals",
           type: "structured_block",
-          originalText:
-            "Goal Statement: Given a field of 3 identical stimuli, the learner will match with 80% accuracy across 3 sessions.\nBaseline: 20% accuracy, established 1/2025.\nDate of Introduction: 1/2025\nProgress Data: Not yet introduced.\nBarriers: None noted.",
+          startAnchor: "Goal Statement: Given a field of 3 identical stimuli, the",
+          endAnchor: "Progress Data: Not yet introduced.\nBarriers: None noted.",
         },
         {
           id: "medical_necessity",
           heading: "Medical Necessity",
           type: "narrative",
-          originalText:
-            "The learner requires continued 1:1 ABA services to address delays in receptive language and matching skills consistent with an ASD diagnosis.",
+          startAnchor: "The learner requires continued 1:1 ABA services to address",
+          endAnchor: "consistent with an ASD diagnosis.",
         },
       ],
       delta: {
@@ -111,6 +113,21 @@ function parseModelJSON(raw) {
   const last = text.lastIndexOf("}");
   if (first === -1 || last === -1) throw new Error("No JSON object found");
   return JSON.parse(text.slice(first, last + 1));
+}
+
+// Slices a section's real text out of the source document using the model's
+// start/end anchors, rather than trusting the model to reproduce the text
+// itself. Returns null if either anchor can't be located verbatim.
+function sliceSection(oldDocText, startAnchor, endAnchor) {
+  if (!oldDocText || !startAnchor || !endAnchor) return null;
+  const startIdx = oldDocText.indexOf(startAnchor);
+  if (startIdx === -1) return null;
+  // Search for endAnchor from startIdx (not startIdx + startAnchor.length) so
+  // short sections where the anchors overlap or are identical still resolve.
+  const endMatchIdx = oldDocText.indexOf(endAnchor, startIdx);
+  if (endMatchIdx === -1) return null;
+  const endIdx = endMatchIdx + endAnchor.length;
+  return oldDocText.slice(startIdx, endIdx);
 }
 
 const INJECTION_PATTERNS = [
@@ -163,7 +180,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 8000,
+        max_tokens: 12000,
         system: SYSTEM_PROMPT,
         messages: [...fewshot, { role: "user", content: inputText }],
       }),
@@ -178,15 +195,47 @@ export default async function handler(req, res) {
     }
 
     const data = await aiRes.json();
+
+    if (data.stop_reason === "max_tokens") {
+      console.error("[generate-reauth-analyze] response truncated: stop_reason=max_tokens");
+      return res
+        .status(502)
+        .json({ error: "The document was too large for the AI to fully analyze in one pass. Try a shorter document or contact support." });
+    }
+
     const text = (data.content || [])
       .filter((b) => b.type === "text")
       .map((b) => b.text)
       .join("\n");
     const parsed = parseModelJSON(text);
 
+    // The model returns lightweight start/end anchors per section rather than
+    // reproducing the full section text (which previously scaled with document
+    // size and could blow the token budget on long documents). Slice the real
+    // text out of oldDocText ourselves so the response shape to the client is
+    // unchanged.
+    const dataQualityIssues = [];
+    const templateSections = (parsed.templateSections || []).map((s) => {
+      const sliced = sliceSection(oldDocText, s.startAnchor, s.endAnchor);
+      if (sliced === null) {
+        dataQualityIssues.push(
+          `Could not locate the exact source text for section "${s.heading || s.id}" — flagged for manual review.`
+        );
+      }
+      return {
+        id: s.id,
+        heading: s.heading,
+        type: s.type,
+        originalText: sliced === null ? "" : sliced,
+      };
+    });
+    const dataQualityNotes = [parsed.dataQualityNotes || "", ...dataQualityIssues]
+      .filter(Boolean)
+      .join(" ");
+
     return res.status(200).json({
       sourceType: parsed.sourceType || "insufficient_data",
-      templateSections: parsed.templateSections || [],
+      templateSections,
       delta: {
         goalCounts: parsed.delta?.goalCounts || { total: 0, mastered: 0, inProgress: 0, onHold: 0, discontinued: 0, new: 0 },
         goalsMastered: parsed.delta?.goalsMastered || [],
@@ -196,7 +245,7 @@ export default async function handler(req, res) {
         goalsNew: parsed.delta?.goalsNew || [],
         behaviorTrends: parsed.delta?.behaviorTrends || [],
       },
-      dataQualityNotes: parsed.dataQualityNotes || "",
+      dataQualityNotes,
     });
   } catch (err) {
     console.error("[generate-reauth-analyze] handler error:", err);
